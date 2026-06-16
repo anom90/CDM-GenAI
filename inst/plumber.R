@@ -970,6 +970,89 @@ function(req, res) {
   return(res_del)
 }
 
+# ── POST /api/admin/reference/update ──────────────────────────────────────────
+#* @serializer json
+#* @post /api/admin/reference/update
+function(req, res) {
+  # Verify Developer Secret Key
+  auth_header <- req$HTTP_DEVELOPER_SECRET_KEY
+  if (is.null(auth_header) || auth_header == "") {
+    auth_header <- req$HTTP_AUTHORIZATION
+    if (!is.null(auth_header) && grepl("^Bearer ", auth_header)) {
+      auth_header <- gsub("^Bearer ", "", auth_header)
+    }
+  }
+  dev_secret <- Sys.getenv("DEVELOPER_SECRET_KEY")
+  if (dev_secret == "" || is.null(auth_header) || auth_header != dev_secret) {
+    res$status <- 401
+    return(list(status = jsonlite::unbox("error"), message = jsonlite::unbox("Unauthorized: Developer secret key mismatch atau tidak valid")))
+  }
+  
+  body <- jsonlite::fromJSON(req$postBody, simplifyVector = FALSE)
+  id   <- body$id
+  
+  if (is.null(id) || id == "") {
+    res$status <- 400
+    return(list(status = jsonlite::unbox("error"), message = jsonlite::unbox("ID tidak boleh kosong")))
+  }
+  
+  author   <- if (!is.null(body$author)) as.character(body$author) else NULL
+  year     <- if (!is.null(body$year)) as.integer(body$year) else NULL
+  title    <- if (!is.null(body$title)) as.character(body$title) else NULL
+  journal  <- if (!is.null(body$journal)) as.character(body$journal) else ""
+  volume   <- if (!is.null(body$volume)) as.character(body$volume) else ""
+  issue    <- if (!is.null(body$issue)) as.character(body$issue) else ""
+  pages    <- if (!is.null(body$pages)) as.character(body$pages) else ""
+  doi      <- if (!is.null(body$doi)) as.character(body$doi) else ""
+  category <- if (!is.null(body$category)) as.character(body$category) else NULL
+  
+  if (is.null(author) || author == "" || is.null(title) || title == "" || is.null(category) || category == "") {
+    res$status <- 400
+    return(list(status = jsonlite::unbox("error"), message = jsonlite::unbox("Penulis, Judul, dan Kategori harus diisi")))
+  }
+  
+  if (is.null(year) || is.na(year)) year <- 2000
+  
+  supabase_url <- Sys.getenv("SUPABASE_URL")
+  supabase_service <- Sys.getenv("SUPABASE_SERVICE_ROLE_KEY")
+  
+  url <- paste0(gsub("/+$", "", supabase_url), "/rest/v1/cdm_references?id=eq.", id)
+  
+  headers <- c(
+    "apikey" = supabase_service,
+    "Authorization" = paste("Bearer", supabase_service),
+    "Content-Type" = "application/json"
+  )
+  
+  payload <- list(
+    author = jsonlite::unbox(author),
+    year = jsonlite::unbox(year),
+    title = jsonlite::unbox(title),
+    journal = jsonlite::unbox(journal),
+    volume = jsonlite::unbox(volume),
+    issue = jsonlite::unbox(issue),
+    pages = jsonlite::unbox(pages),
+    doi = jsonlite::unbox(doi),
+    category = jsonlite::unbox(category)
+  )
+  
+  res_patch <- tryCatch({
+    r <- httr::PATCH(url, httr::add_headers(.headers = headers), body = payload, encode = "json")
+    if (httr::status_code(r) %in% c(200, 204)) {
+      list(status = jsonlite::unbox("success"), message = jsonlite::unbox(paste0("Referensi dengan ID ", id, " berhasil diperbarui")))
+    } else {
+      res$status <- httr::status_code(r)
+      list(status = jsonlite::unbox("error"), message = jsonlite::unbox(paste0("Gagal memperbarui di Supabase: status ", httr::status_code(r), " - ", httr::content(r, "text", encoding = "UTF-8"))))
+    }
+  }, error = function(e) {
+    res$status <- 500
+    list(status = jsonlite::unbox("error"), message = jsonlite::unbox(e$message))
+  })
+  
+  return(res_patch)
+}
+
+
 # ── GET /api/reference/list ───────────────────────────────────────────────────
 #* @serializer json
 #* @get /api/reference/list
