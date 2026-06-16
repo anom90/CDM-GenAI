@@ -370,3 +370,39 @@ Tulisan harus objektif, berbasis teori psikometri, dan sesuai dengan praktik ana
   )
 }
 
+#' @export
+buildQmatrixIdReportPrompt <- function(result, metadata = NULL, reference_text = NULL, research_context = NULL) {
+  result_json <- jsonlite::toJSON(result, auto_unbox = TRUE, pretty = TRUE)
+  meta_prompt <- formatMetadataPrompt(metadata)
+  ref_prompt  <- formatReferencePrompt(reference_text)
+  res_prompt  <- formatResearchContextPrompt(research_context)
+
+  paste0(
+    "Anda adalah asisten ahli psikometri sekaligus rekan diskusi tepercaya bagi peneliti dalam menganalisis Cognitive Diagnosis Model (CDM).
+
+Berikut adalah hasil evaluasi matematis keteridentifikasian (identifiability) Q-Matrix (Gu & Xu, 2021) untuk model yang dipilih:
+
+", result_json, "
+", meta_prompt, "
+", ref_prompt, "
+", res_prompt, "
+
+Tugas Anda adalah:
+
+1. Jelaskan arti dari status keteridentifikasian Q-Matrix saat ini (Strict Identifiability dan Generic Identifiability) apakah terpenuhi atau tidak.
+2. Analisis butir-butir dan kondisi yang terpenuhi (seperti completeness, distinctiveness, repetition, generic completeness, generic repetition) serta tunjukkan implikasi praktisnya terhadap estimasi parameter model.
+3. Berikan saran atau rekomendasi tindak lanjut konkret bagi peneliti (misalnya jika completeness tidak terpenuhi, jelaskan bahwa perlu ada butir soal baru yang mengukur atribut tersebut secara spesifik/tunggal).
+4. Jangan menulis teks sebelum heading pertama.
+
+Gunakan bahasa Indonesia ilmiah yang komunikatif dan kolaboratif, layaknya seorang rekan sejawat yang berdiskusi secara hangat. Hindari kalimat pembuka/penutup klise khas AI. Rujuk kutipan referensi ilmiah secara konsisten menggunakan format APA Style 7th Edition dengan HANYA merujuk pada dokumen yang benar-benar tercantum di bagian DOKUMEN REFERENSI AKADEMIK (misalnya karya Gu & Xu, 2021). Jangan mengarang referensi di luar dokumen yang disediakan.
+
+Susun laporan dalam format Markdown sebanyak 250 kata dengan struktur berikut:
+
+## A. Analisis Keteridentifikasian Q-Matrix
+## B. Implikasi Psikometris Kriteria Matematis
+## C. Rekomendasi Tindak Lanjut Akademik
+
+Tulisan harus objektif, berbasis teori psikometri, dan sesuai dengan kriteria matematis keteridentifikasian model CDM."
+  )
+}
+

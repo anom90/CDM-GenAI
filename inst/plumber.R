@@ -13,6 +13,7 @@ buildProfilPrompt      <- cdm.gen.ai:::buildProfilPrompt
 buildProfilIndividuPrompt <- cdm.gen.ai:::buildProfilIndividuPrompt
 buildChatSystemPrompt  <- cdm.gen.ai:::buildChatSystemPrompt
 buildQvalReportPrompt  <- cdm.gen.ai:::buildQvalReportPrompt
+buildQmatrixIdReportPrompt <- cdm.gen.ai:::buildQmatrixIdReportPrompt
 
 # Load environment variables from .env if it exists
 load_dot_env <- function() {
@@ -612,6 +613,33 @@ function(req, res) {
 
   ref_text <- get_combined_references_text("Q-Matrix")
   prompt   <- buildQvalReportPrompt(suggestions, threshold, metadata, reference_text = ref_text, research_context = research_context)
+
+  tryCatch({
+    ai_text <- callGemini(api_key, prompt)
+    list(status = jsonlite::unbox("success"), report = jsonlite::unbox(ai_text))
+  }, error = function(e) {
+    res$status <- 500
+    list(status = jsonlite::unbox("error"), message = jsonlite::unbox(e$message))
+  })
+}
+
+# ── POST /api/ai/qmatrix-id-report ───────────────────────────────────────────
+#* @serializer json
+#* @post /api/ai/qmatrix-id-report
+function(req, res) {
+  body             <- jsonlite::fromJSON(req$postBody, simplifyVector = TRUE)
+  api_key          <- body$apiKey
+  result           <- body$result
+  metadata         <- body$metadata
+  research_context <- body$researchContext
+
+  if (is.null(api_key) || api_key == "") {
+    res$status <- 400
+    return(list(status = "error", message = "API Key missing"))
+  }
+
+  ref_text <- get_combined_references_text("Q-Matrix")
+  prompt   <- buildQmatrixIdReportPrompt(result, metadata, reference_text = ref_text, research_context = research_context)
 
   tryCatch({
     ai_text <- callGemini(api_key, prompt)
