@@ -130,10 +130,7 @@ fit_cdm <- function(data, q_matrix, model, mono.constraint = FALSE) {
   item_fit_res <- tryCatch({
     itf <- GDINA::itemfit(models)
     mat <- itf$max.itemlevel.fit
-    item_names <- rownames(mat)
-    if (is.null(item_names)) {
-      item_names <- colnames(GDINA::extract(models, "dat"))
-    }
+    item_names <- colnames(GDINA::extract(models, "dat"))
     
     lapply(seq_len(nrow(mat)), function(i) {
       list(

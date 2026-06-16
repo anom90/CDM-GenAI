@@ -426,11 +426,12 @@ function(req, res) {
 
       catprob <- GDINA::extract(mod_obj, what = "catprob.parm")
       discrim  <- GDINA::extract(mod_obj, what = "discrim")
+      item_names <- colnames(GDINA::extract(mod_obj, "dat"))
 
       items <- lapply(seq_along(catprob), function(i) {
         probs <- catprob[[i]]
         list(
-          item = names(catprob)[i],
+          item = item_names[i],
           probabilities = lapply(seq_along(probs), function(j) {
             list(category = names(probs)[j], value = as.numeric(probs[j]))
           }),
@@ -1392,11 +1393,12 @@ function(req, res) {
 
       catprob <- GDINA::extract(mod_obj, what = "catprob.parm")
       discrim  <- GDINA::extract(mod_obj, what = "discrim")
+      item_names <- colnames(GDINA::extract(mod_obj, "dat"))
 
       items <- lapply(seq_along(catprob), function(i) {
         probs <- catprob[[i]]
         list(
-          item = names(catprob)[i],
+          item = item_names[i],
           probabilities = lapply(seq_along(probs), function(j) {
             list(category = names(probs)[j], value = as.numeric(probs[j]))
           }),
