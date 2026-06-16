@@ -445,7 +445,8 @@ function(req, res) {
         parameters       = items,
         profil           = r$profil,
         empirical_stable = r$empirical_stable,
-        item_fit         = r$item_fit
+        item_fit         = r$item_fit,
+        bivariate_fit    = r$bivariate_fit
       )
     })
 
@@ -1410,7 +1411,8 @@ function(req, res) {
         parameters       = items,
         profil           = r$profil,
         empirical_stable = r$empirical_stable,
-        item_fit         = r$item_fit
+        item_fit         = r$item_fit,
+        bivariate_fit    = r$bivariate_fit
       )
     })
 

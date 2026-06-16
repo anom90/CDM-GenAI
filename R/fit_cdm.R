@@ -152,6 +152,28 @@ fit_cdm <- function(data, q_matrix, model, mono.constraint = FALSE) {
     list()
   })
 
+  bivariate_fit_res <- tryCatch({
+    itf <- GDINA::itemfit(models)
+    r_mat <- itf$r
+    item_names <- colnames(GDINA::extract(models, "dat"))
+    
+    lapply(seq_len(nrow(r_mat)), function(i) {
+      idx1 <- as.integer(r_mat[i, "item.pair.1"])
+      idx2 <- as.integer(r_mat[i, "item.pair.2"])
+      list(
+        item1 = item_names[idx1],
+        item2 = item_names[idx2],
+        observed_r = as.numeric(r_mat[i, "observed.r"]),
+        expected_r = as.numeric(r_mat[i, "expected.r"]),
+        zstat = as.numeric(r_mat[i, "zstat"]),
+        pvalue = as.numeric(r_mat[i, "unadj.pvalue"]),
+        adj_pvalue = as.numeric(r_mat[i, "test.adj.pvalue"])
+      )
+    })
+  }, error = function(e) {
+    list()
+  })
+
   list(
     model_object = models,
     model_fit = list(
@@ -173,6 +195,7 @@ fit_cdm <- function(data, q_matrix, model, mono.constraint = FALSE) {
     prevalensi  = s$`Attribute Prevalence`$all,
     profil      = profil_data,
     item_fit    = item_fit_res,
+    bivariate_fit = bivariate_fit_res,
     empirical_stable = tryCatch({
       se_catprob <- GDINA::extract(models, what = "se.catprob.parm")
       if (!is.null(se_catprob)) {
