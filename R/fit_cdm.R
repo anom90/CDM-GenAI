@@ -166,15 +166,29 @@ check_qmatrix_identification <- function(q_matrix, model_name) {
                else if (model_name == "DINO") "DINO"
                else "others"
 
-  if (!requireNamespace("cdmTools", quietly = TRUE)) {
+  # Cek load namespace secara aman untuk menangkap error dependensi (seperti CVXR)
+  load_status <- tryCatch({
+    loadNamespace("cdmTools")
+    TRUE
+  }, error = function(e) {
+    conditionMessage(e)
+  })
+
+  if (!isTRUE(load_status)) {
+    err_msg <- if (grepl("solve.*CVXR", load_status, ignore.case = TRUE)) {
+      "Package 'cdmTools' gagal dimuat karena konflik versi 'CVXR' pada sistem Anda. Jalankan perintah ini di R untuk memperbaikinya: options(repos = c(CRAN = 'https://cloud.r-project.org')); remotes::install_version('CVXR', version = '1.0-15', upgrade = 'never')"
+    } else {
+      paste("Package 'cdmTools' gagal dimuat:", load_status)
+    }
     return(list(
       strict     = FALSE,
       generic    = FALSE,
       conditions = list(),
-      message    = "cdmTools tidak terinstal. Jalankan: install.packages('cdmTools')",
+      message    = err_msg,
       available  = FALSE
     ))
   }
+
 
   tryCatch({
     is_binary_col <- function(x) is.numeric(x) && all(na.omit(x) %in% c(0, 1))
