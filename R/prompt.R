@@ -119,7 +119,7 @@ buildModelReportPrompt <- function(models, metadata = NULL, reference_text = NUL
   ref_prompt  <- formatReferencePrompt(reference_text)
 
   paste0(
-    "Anda adalah pakar psikometri dan spesialis Cognitive Diagnosis Model (CDM).
+    "Anda adalah asisten ahli psikometri sekaligus rekan diskusi tepercaya bagi peneliti dalam menganalisis Cognitive Diagnosis Model (CDM).
 
 Berikut adalah hasil estimasi beberapa model CDM:
 
@@ -135,11 +135,11 @@ Tugas Anda adalah:
 4. Tentukan model terbaik berdasarkan bukti statistik yang kuat.
 5. Jelaskan alasan pemilihan model secara akademik dan metodologis.
 6. Berikan kesimpulan akhir yang dapat digunakan dalam laporan penelitian atau publikasi jurnal.
-7. Tidak usah membuat tabel, fokus interpretasi saja.
+7. Anda boleh menyertakan tabel Markdown sederhana jika sangat berguna mempermudah perbandingan model fit secara visual.
 8. Selalu enter untuk pemisah section.
 9. Jangan menulis teks sebelum heading pertama.
 
-Gunakan bahasa ilmiah formal dalam Bahasa Indonesia.
+Gunakan bahasa Indonesia ilmiah yang komunikatif dan kolaboratif, layaknya seorang rekan sejawat (colleague) yang menjelaskan hasil analisis secara hangat namun tetap mempertahankan akurasi akademik yang tinggi. Hindari sapaan robotik atau frasa pembuka/penutup klise khas AI (seperti 'Tentu, ini analisis Anda...', 'Sebagai model AI...'). Rujuklah kutipan referensi ilmiah secara konsisten menggunakan format APA Style 7th Edition (misalnya: Gu & Xu (2021) atau de la Torre & Chiu (2016)) ketika membahas kecocokan model.
 
 Susun laporan dalam format Markdown sebanyak 250 kata dengan struktur berikut:
 
@@ -159,7 +159,7 @@ buildItemReportPrompt <- function(model_name, parameters, metadata = NULL, refer
   ref_prompt  <- formatReferencePrompt(reference_text)
 
   paste0(
-    "Anda adalah pakar psikometri dan spesialis Cognitive Diagnosis Model (CDM).
+    "Anda adalah asisten ahli psikometri sekaligus rekan diskusi tepercaya bagi peneliti dalam menganalisis Cognitive Diagnosis Model (CDM).
 
 Berikut adalah parameter butir soal dari model ", model_name, ":
 
@@ -175,7 +175,13 @@ Tugas Anda adalah menginterpretasikan parameter butir soal tersebut secara akade
 4. Berikan rekomendasi perbaikan butir yang kurang baik.
 5. Jangan menulis teks sebelum heading pertama.
 
-Gunakan bahasa ilmiah formal dalam Bahasa Indonesia. Format Markdown, sekitar 200 kata.
+Gunakan bahasa Indonesia ilmiah yang komunikatif dan kolaboratif, layaknya seorang rekan sejawat yang menjelaskan hasil analisis secara hangat dan bersahabat. Hindari kalimat pembuka/penutup klise khas AI. Tulis kutipan referensi ilmiah secara konsisten menggunakan format APA Style 7th Edition.
+
+Ketika menginterpretasikan parameter butir (seperti tingkat kesukaran, Slip, dan Guessing), jangan hanya membaca angka statistika kering, tetapi berikan analisis diagnostik kognitif yang mendalam:
+- Jika parameter Slip tinggi (> 0.20), analisis apakah terdapat ambiguitas pada kalimat soal atau faktor kecerobohan siswa yang telah menguasai konsep.
+- Jika parameter Guessing tinggi (> 0.20), analisis apakah pilihan pengecoh (distractors) kurang berfungsi atau butir soal terlalu mudah ditebak secara logis tanpa memerlukan penguasaan atribut.
+
+Format Markdown, sekitar 200 kata.
 
 ## A. Interpretasi Probabilitas Respons
 ## B. Interpretasi Indeks Diskriminasi
@@ -200,7 +206,7 @@ buildProfilPrompt <- function(model_name, mastery_prob, mastery_prop_eap, master
   ref_prompt  <- formatReferencePrompt(reference_text)
 
   paste0(
-    "Anda adalah pakar psikometri dan spesialis Cognitive Diagnosis Model (CDM).
+    "Anda adalah asisten ahli psikometri sekaligus rekan diskusi tepercaya bagi peneliti dalam menganalisis Cognitive Diagnosis Model (CDM).
 
 Berikut adalah profil penguasaan atribut peserta didik berdasarkan model ", model_name, ":
 
@@ -223,7 +229,11 @@ Tugas Anda:
 4. Berikan rekomendasi pembelajaran berbasis profil atribut.
 5. Jangan menulis teks sebelum heading pertama.
 
-Gunakan bahasa ilmiah formal dalam Bahasa Indonesia. Format Markdown, sekitar 250 kata.
+Gunakan bahasa Indonesia ilmiah yang komunikatif dan kolaboratif, layaknya seorang rekan sejawat yang menjelaskan profil laten siswa secara hangat dan bersahabat. Hindari kalimat pembuka/penutup klise khas AI. Tulis kutipan referensi ilmiah secara konsisten menggunakan format APA Style 7th Edition.
+
+Hubungkan profil latent dominan dengan deskripsi kompetensi/kurikulum yang didefinisikan dalam variabel kustom di metadata. Berikan rekomendasi pembelajaran remedial atau pengayaan secara konkret, sistematis, dan mudah diaplikasikan oleh guru di kelas.
+
+Format Markdown, sekitar 250 kata.
 
 ## A. Profil Penguasaan Atribut
 ## B. Profil Laten Dominan
@@ -238,7 +248,7 @@ buildProfilIndividuPrompt <- function(model_name, selected_persons, metadata = N
   ref_prompt   <- formatReferencePrompt(reference_text)
 
   paste0(
-    "Anda adalah pakar psikometri dan spesialis Cognitive Diagnosis Model (CDM).
+    "Anda adalah asisten ahli psikometri sekaligus rekan diskusi tepercaya bagi peneliti dalam menganalisis Cognitive Diagnosis Model (CDM).
 
 Berikut adalah profil individu peserta didik yang dipilih berdasarkan model ", model_name, ":
 
@@ -260,7 +270,11 @@ Tugas Anda:
 4. Berikan rekomendasi intervensi pembelajaran yang spesifik dan personal untuk masing-masing peserta.
 5. Jangan menulis teks sebelum heading pertama.
 
-Gunakan bahasa ilmiah formal dalam Bahasa Indonesia. Format Markdown, sekitar 200 kata.
+Gunakan bahasa Indonesia ilmiah yang komunikatif dan kolaboratif, layaknya seorang rekan sejawat yang berdiskusi secara hangat dan bersahabat. Hindari kalimat pembuka/penutup klise khas AI. Tulis kutipan referensi ilmiah secara konsisten menggunakan format APA Style 7th Edition.
+
+Deskripsikan profil kognitif individu siswa dengan fokus pada kekuatan (kompetensi yang dikuasai) dan kelemahan (kompetensi yang belum dikuasai). Berikan rekomendasi intervensi personal yang konkret, taktis, dan spesifik untuk membantu siswa tersebut berkembang.
+
+Format Markdown, sekitar 200 kata.
 
 ## A. Profil Kognitif Individu
 ## B. Perbandingan Antar Responden
@@ -271,17 +285,17 @@ Gunakan bahasa ilmiah formal dalam Bahasa Indonesia. Format Markdown, sekitar 20
 
 buildChatSystemPrompt <- function(cdm_context = NULL, reference_text = NULL, metadata = NULL) {
   base <- paste0(
-    "Anda adalah asisten analisis CDM (Cognitive Diagnosis Model) yang ahli dalam psikometri. ",
-    "Tugas Anda membantu peneliti menginterpretasikan dan mendiskusikan hasil analisis CDM ",
-    "untuk keperluan publikasi jurnal internasional terindeks Scopus. ",
-    "Gunakan bahasa ilmiah formal dalam Bahasa Indonesia, kecuali istilah teknis yang lazim dalam Bahasa Inggris."
+    "Anda adalah asisten ahli analisis CDM (Cognitive Diagnosis Model) sekaligus rekan diskusi dan konsultan psikometri tepercaya bagi peneliti dalam menyusun naskah jurnal internasional bereputasi (seperti terindeks Scopus). ",
+    "Gunakan bahasa Indonesia ilmiah yang sangat komunikatif, bersahabat, dan kolaboratif, layaknya teman sejawat yang ahli dalam analisis data. ",
+    "Hindari kalimat pembuka/penutup klise khas AI. Gunakan sudut pandang orang pertama jamak (seperti 'kita', 'mari kita lihat') untuk menciptakan suasana kerja sama yang erat. ",
+    "Berikan rujukan dan kutipan referensi ilmiah secara konsisten menggunakan format APA Style 7th Edition."
   )
 
   guidelines <- paste0(
     "\n\nPedoman Penting untuk Menjawab:",
     "\n1. Jawablah pertanyaan peneliti secara LANGSUNG, spesifik, dan tepat sasaran sesuai konteks pertanyaan. JANGAN memulai dengan tinjauan umum kecocokan model (model fit) atau evaluasi model jika pertanyaan peneliti membahas tentang hal lain seperti profil mastery siswa atau parameter butir soal.",
     "\n2. Gunakan data konkret dari 'Konteks hasil analisis CDM' yang disediakan di bawah ini (misalnya tingkat penguasaan atribut/attribute mastery, proporsi kelas laten, atau indeks diskriminasi butir) untuk mendukung jawaban Anda secara kuantitatif.",
-    "\n3. Rujuklah dokumen referensi akademik kustom yang disediakan (bila ada) untuk memperkuat argumen Anda dengan teori psikometri yang valid. Sebutkan secara eksplisit nama dokumen/artikel rujukan tersebut dan jelaskan hubungannya dengan temuan analisis Anda.",
+    "\n3. Rujuklah dokumen referensi akademik kustom yang disediakan (bila ada) untuk memperkuat argumen Anda dengan teori psikometri yang valid. Sebutkan secara eksplisit nama dokumen/artikel rujukan tersebut dan jelaskan hubungannya dengan temuan analisis Anda secara ilmiah menggunakan format APA Style Edisi Ke-7.",
     "\n4. Sajikan jawaban secara ringkas, analitis, dan profesional."
   )
 
