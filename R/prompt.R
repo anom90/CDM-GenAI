@@ -1,0 +1,297 @@
+loadDefaultReference <- function() {
+  default_ref_path <- system.file("reference/default_cdm_reference.txt", package = "cdm.gen.ai")
+  if (default_ref_path != "" && file.exists(default_ref_path)) {
+    con <- file(default_ref_path, encoding = "UTF-8")
+    lines <- readLines(con, warn = FALSE)
+    close(con)
+    return(paste(lines, collapse = "\n"))
+  }
+  return("")
+}
+
+formatReferencePrompt <- function(reference_text) {
+  default_ref <- loadDefaultReference()
+  
+  has_default <- (nchar(trimws(default_ref)) > 0)
+  has_user    <- (!is.null(reference_text) && nchar(trimws(reference_text)) > 0)
+  
+  if (!has_default && !has_user) return("")
+  
+  ref_sections <- list()
+  
+  if (has_default) {
+    ref_sections <- c(ref_sections, paste0(
+      "1. PANDUAN STANDAR AKADEMIK CDM (BAWAAN APLIKASI):\n",
+      default_ref
+    ))
+  }
+  
+  if (has_user) {
+    max_chars <- 10000
+    user_trimmed <- if (nchar(reference_text) > max_chars) {
+      paste0(substr(reference_text, 1, max_chars), "\n... [dipotong karena terlalu panjang] ...")
+    } else reference_text
+    
+    ref_sections <- c(ref_sections, paste0(
+      "2. DOKUMEN RUJUKAN TAMBAHAN DARI PENELITI:\n",
+      user_trimmed
+    ))
+  }
+  
+  paste0(
+    "\n\n--- DOKUMEN REFERENSI AKADEMIK (WAJIB DIRUJUK) ---\n",
+    "Anda WAJIB mematuhi ketentuan teoretis dan instruksi di bawah ini saat menyusun laporan interpretasi:\n",
+    "- Untuk parameter statistik, model fit, reliabilitas, dan kualitas butir, wajib ikuti standar batas nilai (threshold) yang diuraikan pada referensi bawaan (1).\n",
+    "- Jika peneliti menyediakan rujukan kustom (2) terkait kajian teori pembelajaran atau metode intervensi, integrasikan dan hubungkan hasil analisis CDM dengan pembahasan kurikulum/intervensi tersebut secara kontekstual.\n",
+    "- Jaga konsistensi istilah akademik formal dan gunakan sitasi sederhana (misal: 'berdasarkan referensi akademis...', 'merujuk pada standar...') jika diperlukan.\n\n",
+    paste(ref_sections, collapse = "\n\n"), "\n",
+    "----------------------------------------------------\n"
+  )
+}
+
+formatMetadataPrompt <- function(metadata) {
+  if (is.null(metadata) || length(metadata) == 0) return("")
+  
+  items_str <- ""
+  if (!is.null(metadata$items) && (is.data.frame(metadata$items) || is.list(metadata$items)) && length(metadata$items) > 0) {
+    items_df <- metadata$items
+    if (is.data.frame(items_df) && nrow(items_df) > 0) {
+      lines <- sapply(1:nrow(items_df), function(i) {
+        code <- items_df$code[i]
+        label <- items_df$label[i]
+        desc <- if (!is.null(items_df$description[i])) items_df$description[i] else ""
+        
+        if ((!is.null(label) && label != "" && label != code) || (!is.null(desc) && desc != "")) {
+          paste0("- Kode: ", code, 
+                 ifelse(!is.null(label) && label != "" && label != code, paste0(" (Label Baru: ", label, ")"), ""),
+                 ifelse(!is.null(desc) && desc != "", paste0(" -> Deskripsi/Materi Soal: ", desc), ""))
+        } else {
+          NULL
+        }
+      })
+      lines <- unlist(lines)
+      if (length(lines) > 0) {
+        items_str <- paste0("Butir Soal (Items) dengan Konteks Kustom:\n", paste(lines, collapse = "\n"))
+      }
+    }
+  }
+  
+  attrs_str <- ""
+  if (!is.null(metadata$attributes) && (is.data.frame(metadata$attributes) || is.list(metadata$attributes)) && length(metadata$attributes) > 0) {
+    attrs_df <- metadata$attributes
+    if (is.data.frame(attrs_df) && nrow(attrs_df) > 0) {
+      lines <- sapply(1:nrow(attrs_df), function(i) {
+        code <- attrs_df$code[i]
+        label <- attrs_df$label[i]
+        desc <- if (!is.null(attrs_df$description[i])) attrs_df$description[i] else ""
+        
+        if ((!is.null(label) && label != "" && label != code) || (!is.null(desc) && desc != "")) {
+          paste0("- Kode: ", code, 
+                 ifelse(!is.null(label) && label != "" && label != code, paste0(" (Label Baru: ", label, ")"), ""),
+                 ifelse(!is.null(desc) && desc != "", paste0(" -> Deskripsi/Kompetensi Atribut: ", desc), ""))
+        } else {
+          NULL
+        }
+      })
+      lines <- unlist(lines)
+      if (length(lines) > 0) {
+        attrs_str <- paste0("Atribut Dimensi (Attributes) dengan Konteks Kustom:\n", paste(lines, collapse = "\n"))
+      }
+    }
+  }
+  
+  if (items_str == "" && attrs_str == "") return("")
+  
+  paste0(
+    "\n\n--- KONTEKS / DESKRIPSI VARIABEL ---\n",
+    "Peneliti telah mendefinisikan label baru dan deskripsi materi/kompetensi untuk variabel berikut. ",
+    "Gunakan informasi di bawah ini untuk menggantikan kode asli (seperti V1, V2, A1, A2) dengan label kustom ",
+    "yang lebih kontekstual, nyata, dan bermakna dalam penjelasan Anda agar peneliti mendapatkan laporan yang intuitif:\n\n",
+    ifelse(items_str != "", paste0(items_str, "\n\n"), ""),
+    ifelse(attrs_str != "", paste0(attrs_str, "\n"), ""),
+    "-------------------------------------\n"
+  )
+}
+
+buildModelReportPrompt <- function(models, metadata = NULL, reference_text = NULL) {
+  models_json <- jsonlite::toJSON(models, auto_unbox = TRUE, pretty = TRUE)
+  meta_prompt <- formatMetadataPrompt(metadata)
+  ref_prompt  <- formatReferencePrompt(reference_text)
+
+  paste0(
+    "Anda adalah pakar psikometri dan spesialis Cognitive Diagnosis Model (CDM).
+
+Berikut adalah hasil estimasi beberapa model CDM:
+
+", models_json, "
+", meta_prompt, "
+", ref_prompt, "
+
+Tugas Anda adalah:
+
+1. Bandingkan seluruh model menggunakan indeks kecocokan relatif (AIC, BIC, Deviance).
+2. Interpretasikan indeks kecocokan absolut (M2, RMSEA2, SRMSR).
+3. Interpretasikan indeks reliabilitas (Classification Accuracy/Test-level dan Attribute-level).
+4. Tentukan model terbaik berdasarkan bukti statistik yang kuat.
+5. Jelaskan alasan pemilihan model secara akademik dan metodologis.
+6. Berikan kesimpulan akhir yang dapat digunakan dalam laporan penelitian atau publikasi jurnal.
+7. Tidak usah membuat tabel, fokus interpretasi saja.
+8. Selalu enter untuk pemisah section.
+9. Jangan menulis teks sebelum heading pertama.
+
+Gunakan bahasa ilmiah formal dalam Bahasa Indonesia.
+
+Susun laporan dalam format Markdown sebanyak 250 kata dengan struktur berikut:
+
+## A. Interpretasi Kecocokan Relatif
+## B. Interpretasi Kecocokan Absolut
+## C. Interpretasi Reliabilitas
+## D. Pemilihan Model Terbaik
+## E. Kesimpulan Akhir
+
+Tulisan harus objektif, berbasis teori psikometri, dan sesuai dengan praktik analisis CDM dalam literatur akademik."
+  )
+}
+
+buildItemReportPrompt <- function(model_name, parameters, metadata = NULL, reference_text = NULL) {
+  params_json <- jsonlite::toJSON(parameters, auto_unbox = TRUE, pretty = TRUE)
+  meta_prompt <- formatMetadataPrompt(metadata)
+  ref_prompt  <- formatReferencePrompt(reference_text)
+
+  paste0(
+    "Anda adalah pakar psikometri dan spesialis Cognitive Diagnosis Model (CDM).
+
+Berikut adalah parameter butir soal dari model ", model_name, ":
+
+", params_json, "
+", meta_prompt, "
+", ref_prompt, "
+
+Tugas Anda adalah menginterpretasikan parameter butir soal tersebut secara akademik:
+
+1. Interpretasikan probabilitas respons benar untuk setiap pola penguasaan atribut.
+2. Interpretasikan indeks diskriminasi (delta_p dan GDI) untuk setiap butir.
+3. Identifikasi butir dengan kualitas diskriminasi tinggi dan rendah.
+4. Berikan rekomendasi perbaikan butir yang kurang baik.
+5. Jangan menulis teks sebelum heading pertama.
+
+Gunakan bahasa ilmiah formal dalam Bahasa Indonesia. Format Markdown, sekitar 200 kata.
+
+## A. Interpretasi Probabilitas Respons
+## B. Interpretasi Indeks Diskriminasi
+## C. Identifikasi Kualitas Butir
+## D. Rekomendasi"
+  )
+}
+
+buildProfilPrompt <- function(model_name, mastery_prob, mastery_prop_eap, mastery_prop_map,
+                              mastery_prop_mle, latent_class, metadata = NULL, reference_text = NULL) {
+  profil_json <- jsonlite::toJSON(
+    list(
+      attribute_prevalence   = mastery_prob,
+      proportion_eap         = mastery_prop_eap,
+      proportion_map         = mastery_prop_map,
+      proportion_mle         = mastery_prop_mle,
+      latent_class           = latent_class
+    ),
+    auto_unbox = TRUE, pretty = TRUE
+  )
+  meta_prompt <- formatMetadataPrompt(metadata)
+  ref_prompt  <- formatReferencePrompt(reference_text)
+
+  paste0(
+    "Anda adalah pakar psikometri dan spesialis Cognitive Diagnosis Model (CDM).
+
+Berikut adalah profil penguasaan atribut peserta didik berdasarkan model ", model_name, ":
+
+", profil_json, "
+", meta_prompt, "
+", ref_prompt, "
+
+Keterangan data:
+- attribute_prevalence: proporsi penguasaan atribut dari parameter struktural model (prevalensi teoritis)
+- proportion_eap: proporsi master per atribut berdasarkan EAP (Expected A Posteriori)
+- proportion_map: proporsi master per atribut berdasarkan MAP (Maximum A Posteriori)
+- proportion_mle: proporsi master per atribut berdasarkan MLE (Maximum Likelihood Estimation)
+- latent_class: distribusi pola penguasaan (profil laten) dalam populasi
+
+Tugas Anda:
+
+1. Interpretasikan attribute_prevalence dan bandingkan dengan proportion_eap/MAP/MLE — apakah konsisten?
+2. Deskripsikan profil laten dominan yang terbentuk beserta maknanya.
+3. Jelaskan implikasi pedagogis dari pola penguasaan yang ditemukan.
+4. Berikan rekomendasi pembelajaran berbasis profil atribut.
+5. Jangan menulis teks sebelum heading pertama.
+
+Gunakan bahasa ilmiah formal dalam Bahasa Indonesia. Format Markdown, sekitar 250 kata.
+
+## A. Profil Penguasaan Atribut
+## B. Profil Laten Dominan
+## C. Implikasi Pedagogis
+## D. Rekomendasi Pembelajaran"
+  )
+}
+
+buildProfilIndividuPrompt <- function(model_name, selected_persons, metadata = NULL, reference_text = NULL) {
+  persons_json <- jsonlite::toJSON(selected_persons, auto_unbox = TRUE, pretty = TRUE)
+  meta_prompt  <- formatMetadataPrompt(metadata)
+  ref_prompt   <- formatReferencePrompt(reference_text)
+
+  paste0(
+    "Anda adalah pakar psikometri dan spesialis Cognitive Diagnosis Model (CDM).
+
+Berikut adalah profil individu peserta didik yang dipilih berdasarkan model ", model_name, ":
+
+", persons_json, "
+", meta_prompt, "
+", ref_prompt, "
+
+Keterangan data:
+- id: nomor urut responden
+- totalScore: skor total butir soal
+- pattern: pola penguasaan atribut (MAP, binary 0/1)
+- mp: marginal probability penguasaan setiap atribut (nilai kontinu 0-1, digunakan pada radar chart)
+
+Tugas Anda:
+
+1. Deskripsikan profil kognitif masing-masing peserta didik secara individual berdasarkan mp dan pattern.
+2. Jika lebih dari satu peserta dipilih, bandingkan kesamaan dan perbedaan profil antar individu.
+3. Identifikasi atribut yang sudah dikuasai (mp tinggi) dan yang masih perlu ditingkatkan (mp rendah).
+4. Berikan rekomendasi intervensi pembelajaran yang spesifik dan personal untuk masing-masing peserta.
+5. Jangan menulis teks sebelum heading pertama.
+
+Gunakan bahasa ilmiah formal dalam Bahasa Indonesia. Format Markdown, sekitar 200 kata.
+
+## A. Profil Kognitif Individu
+## B. Perbandingan Antar Responden
+## C. Atribut yang Perlu Ditingkatkan
+## D. Rekomendasi Intervensi Personal"
+  )
+}
+
+buildChatSystemPrompt <- function(cdm_context = NULL, reference_text = NULL, metadata = NULL) {
+  base <- paste0(
+    "Anda adalah asisten analisis CDM (Cognitive Diagnosis Model) yang ahli dalam psikometri. ",
+    "Tugas Anda membantu peneliti menginterpretasikan dan mendiskusikan hasil analisis CDM ",
+    "untuk keperluan publikasi jurnal internasional terindeks Scopus. ",
+    "Gunakan bahasa ilmiah formal dalam Bahasa Indonesia, kecuali istilah teknis yang lazim dalam Bahasa Inggris."
+  )
+
+  guidelines <- paste0(
+    "\n\nPedoman Penting untuk Menjawab:",
+    "\n1. Jawablah pertanyaan peneliti secara LANGSUNG, spesifik, dan tepat sasaran sesuai konteks pertanyaan. JANGAN memulai dengan tinjauan umum kecocokan model (model fit) atau evaluasi model jika pertanyaan peneliti membahas tentang hal lain seperti profil mastery siswa atau parameter butir soal.",
+    "\n2. Gunakan data konkret dari 'Konteks hasil analisis CDM' yang disediakan di bawah ini (misalnya tingkat penguasaan atribut/attribute mastery, proporsi kelas laten, atau indeks diskriminasi butir) untuk mendukung jawaban Anda secara kuantitatif.",
+    "\n3. Rujuklah dokumen referensi akademik kustom yang disediakan (bila ada) untuk memperkuat argumen Anda dengan teori psikometri yang valid. Sebutkan secara eksplisit nama dokumen/artikel rujukan tersebut dan jelaskan hubungannya dengan temuan analisis Anda.",
+    "\n4. Sajikan jawaban secara ringkas, analitis, dan profesional."
+  )
+
+  context_section <- if (!is.null(cdm_context) && length(cdm_context) > 0) {
+    ctx_json <- jsonlite::toJSON(cdm_context, auto_unbox = TRUE, pretty = TRUE)
+    paste0("\n\nKonteks hasil analisis CDM yang sedang dibahas:\n```json\n", ctx_json, "\n```")
+  } else ""
+
+  ref_prompt <- formatReferencePrompt(reference_text)
+  meta_prompt <- formatMetadataPrompt(metadata)
+
+  paste0(base, guidelines, context_section, ref_prompt, meta_prompt)
+}

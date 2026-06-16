@@ -1,0 +1,24 @@
+# R
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+
+# R package build
+*.tar.gz
+*.zip
+/doc/
+/Meta/
+..Rcheck/
+
+# macOS
+.DS_Store
+
+# Claude settings
+.claude/
+
+# Temporary / dev files
+*.tmp
+fit_cdmx.R
+run_paket.R

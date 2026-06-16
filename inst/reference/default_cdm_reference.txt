@@ -1,0 +1,29 @@
+=== ACUAN TEORI & STANDAR PENILAIAN COGNITIVE DIAGNOSIS MODEL (CDM) ===
+
+1. KELAYAKAN MODEL (MODEL FIT)
+a. Kecocokan Absolut (Absolute Fit):
+- Uji M2 (M2 statistic): Menguji kesesuaian antara model dan data secara absolut. Jika nilai p-value dari statistik M2 > 0.05, maka model dinyatakan fit secara absolut (tidak berbeda signifikan dengan data riil).
+- RMSEA2 (Root Mean Square Error of Approximation): Menunjukkan ukuran kedekatan fit. Nilai RMSEA2 <= 0.045 menunjukkan kecocokan sangat baik (excellent fit), sedangkan nilai <= 0.08 menunjukkan kecocokan yang dapat diterima (acceptable fit).
+- SRMSR (Standardized Root Mean Square Residual): Mengukur selisih antara korelasi teoretis dan empiris. Nilai SRMSR <= 0.05 menunjukkan kecocokan yang baik (good fit).
+
+b. Kecocokan Relatif (Relative Fit):
+- AIC (Akaike Information Criterion) & BIC (Bayesian Information Criterion): Digunakan untuk membandingkan beberapa model alternatif (seperti GDINA, DINA, DINO, LLM, RRUM, ACDM). Model dengan nilai AIC dan BIC terkecil dipilih sebagai model terbaik karena paling seimbang antara kecocokan dan kesederhanaan parameter (parsimony).
+- Deviance (-2 Log-Likelihood): Nilai deviasi dari model. Semakin kecil nilainya, semakin baik model menjelaskan data.
+
+2. RELIABILITAS ESTIMASI (CLASSIFICATION ACCURACY)
+- Kriteria akurasi klasifikasi (Classification Accuracy) mengukur konsistensi estimasi penguasaan atribut peserta didik.
+- Akurasi tingkat tes (Test-level accuracy, tau) mengukur proporsi klasifikasi profil kognitif yang benar secara keseluruhan.
+- Akurasi tingkat atribut (Attribute-level accuracy, tau_k) mengukur akurasi klasifikasi untuk masing-masing dimensi atribut secara spesifik.
+- Nilai akurasi yang ideal adalah >= 0.80. Nilai di bawah 0.70 menunjukkan ketidakstabilan klasifikasi.
+
+3. PARAMETER BUTIR & KUALITAS SOAL (ITEM PARAMETERS)
+- Daya Beda Butir (Item Discrimination): Diukur menggunakan delta_p atau GDI (Generalized Discrimination Index). Nilai GDI yang lebih tinggi menunjukkan butir soal tersebut mampu membedakan dengan sangat baik antara peserta didik yang menguasai atribut dan yang tidak.
+- Probabilitas Keberhasilan (Success Probabilities):
+  - Slip parameter (s): Probabilitas peserta didik yang menguasai semua atribut yang diperlukan tetap menjawab salah pada butir tersebut. Nilai s yang ideal adalah rendah (s < 0.20).
+  - Guessing parameter (g): Probabilitas peserta didik yang tidak menguasai atribut yang diperlukan tetapi berhasil menjawab benar karena menebak. Nilai g yang ideal adalah rendah (g < 0.20).
+- Probabilitas respons benar untuk setiap latent class/kombinasi atribut harus bersifat monoton naik (meningkat seiring bertambahnya jumlah atribut yang dikuasai).
+
+4. VALIDASI Q-MATRIX (MESA PVAF METHOD)
+- Menggunakan kriteria PVAF (Proportion of Variance Accounted For) berdasarkan de la Torre & Chiu (2016).
+- Threshold standar yang disarankan adalah 0.95. Kombinasi atribut yang menghasilkan nilai PVAF >= 0.95 dan merupakan kombinasi paling sederhana dipilih sebagai vektor Q yang direvisi.
+- Perubahan Q-Matrix secara empiris wajib dikonfirmasi ulang dengan deskripsi kompetensi teoritis dan ahli materi (content expert) sebelum diterapkan secara final.
