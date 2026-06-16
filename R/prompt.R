@@ -21,7 +21,7 @@ formatReferencePrompt <- function(reference_text) {
   
   if (has_default) {
     ref_sections <- c(ref_sections, paste0(
-      "1. PANDUAN STANDAR AKADEMIK CDM (BAWAAN APLIKASI):\n",
+      "1. ACUAN PARAMETER TEORITIS & AMBANG BATAS CDM (STANDAR APLIKASI):\n",
       default_ref
     ))
   }
@@ -41,9 +41,9 @@ formatReferencePrompt <- function(reference_text) {
   paste0(
     "\n\n--- DOKUMEN REFERENSI AKADEMIK (WAJIB DIRUJUK) ---\n",
     "Anda WAJIB mematuhi ketentuan teoretis dan instruksi di bawah ini saat menyusun laporan interpretasi:\n",
-    "- Untuk parameter statistik, model fit, reliabilitas, dan kualitas butir, wajib ikuti standar batas nilai (threshold) yang diuraikan pada referensi bawaan (1).\n",
+    "- Untuk parameter statistik, model fit, reliabilitas, dan kualitas butir, wajib ikuti standar batas nilai (threshold) yang diuraikan pada acuan parameter CDM (1).\n",
     "- Jika peneliti menyediakan rujukan kustom (2) terkait kajian teori pembelajaran atau metode intervensi, integrasikan dan hubungkan hasil analisis CDM dengan pembahasan kurikulum/intervensi tersebut secara kontekstual.\n",
-    "- Jaga konsistensi istilah akademik formal dan gunakan sitasi sederhana (misal: 'berdasarkan referensi akademis...', 'merujuk pada standar...') jika diperlukan.\n\n",
+    "- PENTING: Jangan menyalin atau menuliskan label rujukan 'PANDUAN STANDAR AKADEMIK CDM', 'ACUAN PARAMETER TEORITIS & AMBANG BATAS CDM', atau 'BAWAAN APLIKASI' di dalam hasil laporan interpretasi. Rujuklah standar nilai batas tersebut secara ilmiah sebagai acuan standar teoretis CDM, atau jika ada dokumen rujukan spesifik di bawah ini, sitasi dokumen tersebut secara formal menggunakan format APA Style 7th Edition.\n\n",
     paste(ref_sections, collapse = "\n\n"), "\n",
     "----------------------------------------------------\n"
   )
@@ -153,7 +153,7 @@ Tugas Anda adalah:
 8. Selalu enter untuk pemisah section.
 9. Jangan menulis teks sebelum heading pertama.
 
-Gunakan bahasa Indonesia ilmiah yang komunikatif dan kolaboratif, layaknya seorang rekan sejawat (colleague) yang menjelaskan hasil analisis secara hangat namun tetap mempertahankan akurasi akademik yang tinggi. Hindari sapaan robotik atau frasa pembuka/penutup klise khas AI (seperti 'Tentu, ini analisis Anda...', 'Sebagai model AI...'). Rujuklah kutipan referensi ilmiah secara konsisten menggunakan format APA Style 7th Edition (misalnya: Gu & Xu (2021) atau de la Torre & Chiu (2016)) ketika membahas kecocokan model.
+Gunakan bahasa Indonesia ilmiah yang komunikatif dan kolaboratif, layaknya seorang rekan sejawat (colleague) yang menjelaskan hasil analisis secara hangat namun tetap mempertahankan akurasi akademik yang tinggi. Hindari sapaan robotik atau frasa pembuka/penutup klise khas AI (seperti 'Tentu, ini analisis Anda...', 'Sebagai model AI...'). Rujuklah kutipan referensi ilmiah secara konsisten menggunakan format APA Style 7th Edition dengan HANYA merujuk pada dokumen yang benar-benar tercantum di bagian DOKUMEN REFERENSI AKADEMIK (bila ada). Jangan pernah mengarang atau menambahkan referensi yang tidak terdapat di dokumen yang diberikan.
 
 Susun laporan dalam format Markdown sebanyak 250 kata dengan struktur berikut:
 
@@ -191,7 +191,7 @@ Tugas Anda adalah menginterpretasikan parameter butir soal tersebut secara akade
 4. Berikan rekomendasi perbaikan butir yang kurang baik.
 5. Jangan menulis teks sebelum heading pertama.
 
-Gunakan bahasa Indonesia ilmiah yang komunikatif dan kolaboratif, layaknya seorang rekan sejawat yang menjelaskan hasil analisis secara hangat dan bersahabat. Hindari kalimat pembuka/penutup klise khas AI. Tulis kutipan referensi ilmiah secara konsisten menggunakan format APA Style 7th Edition.
+Gunakan bahasa Indonesia ilmiah yang komunikatif dan kolaboratif, layaknya seorang rekan sejawat yang menjelaskan hasil analisis secara hangat dan bersahabat. Hindari kalimat pembuka/penutup klise khas AI. Tulis kutipan referensi ilmiah secara konsisten menggunakan format APA Style 7th Edition dengan HANYA merujuk pada dokumen yang benar-benar tercantum di bagian DOKUMEN REFERENSI AKADEMIK (bila ada). Jangan menggunakan atau mengarang referensi lain di luar dokumen tersebut.
 
 Ketika menginterpretasikan parameter butir (seperti tingkat kesukaran, Slip, dan Guessing), jangan hanya membaca angka statistika kering, tetapi berikan analisis diagnostik kognitif yang mendalam:
 - Jika parameter Slip tinggi (> 0.20), analisis apakah terdapat ambiguitas pada kalimat soal atau faktor kecerobohan siswa yang telah menguasai konsep.
@@ -247,7 +247,7 @@ Tugas Anda:
 4. Berikan rekomendasi pembelajaran berbasis profil atribut.
 5. Jangan menulis teks sebelum heading pertama.
 
-Gunakan bahasa Indonesia ilmiah yang komunikatif dan kolaboratif, layaknya seorang rekan sejawat yang menjelaskan profil laten siswa secara hangat dan bersahabat. Hindari kalimat pembuka/penutup klise khas AI. Tulis kutipan referensi ilmiah secara konsisten menggunakan format APA Style 7th Edition.
+Gunakan bahasa Indonesia ilmiah yang komunikatif dan kolaboratif, layaknya seorang rekan sejawat yang menjelaskan profil laten siswa secara hangat dan bersahabat. Hindari kalimat pembuka/penutup klise khas AI. Tulis kutipan referensi ilmiah secara konsisten menggunakan format APA Style 7th Edition dengan HANYA merujuk pada dokumen yang benar-benar tercantum di bagian DOKUMEN REFERENSI AKADEMIK (bila ada). Jangan mengarang referensi di luar dokumen tersebut.
 
 Hubungkan profil latent dominan dengan deskripsi kompetensi/kurikulum yang didefinisikan dalam variabel kustom di metadata. Berikan rekomendasi pembelajaran remedial atau pengayaan secara konkret, sistematis, dan mudah diaplikasikan oleh guru di kelas.
 
@@ -290,7 +290,7 @@ Tugas Anda:
 4. Berikan rekomendasi intervensi pembelajaran yang spesifik dan personal untuk masing-masing peserta.
 5. Jangan menulis teks sebelum heading pertama.
 
-Gunakan bahasa Indonesia ilmiah yang komunikatif dan kolaboratif, layaknya seorang rekan sejawat yang berdiskusi secara hangat dan bersahabat. Hindari kalimat pembuka/penutup klise khas AI. Tulis kutipan referensi ilmiah secara konsisten menggunakan format APA Style 7th Edition.
+Gunakan bahasa Indonesia ilmiah yang komunikatif dan kolaboratif, layaknya seorang rekan sejawat yang berdiskusi secara hangat dan bersahabat. Hindari kalimat pembuka/penutup klise khas AI. Tulis kutipan referensi ilmiah secara konsisten menggunakan format APA Style 7th Edition dengan HANYA merujuk pada dokumen yang benar-benar tercantum di bagian DOKUMEN REFERENSI AKADEMIK (bila ada). Jangan pernah mengarang atau menuliskan referensi lain.
 
 Deskripsikan profil kognitif individu siswa dengan fokus pada kekuatan (kompetensi yang dikuasai) dan kelemahan (kompetensi yang belum dikuasai). Berikan rekomendasi intervensi personal yang konkret, taktis, dan spesifik untuk membantu siswa tersebut berkembang.
 
@@ -308,14 +308,14 @@ buildChatSystemPrompt <- function(cdm_context = NULL, reference_text = NULL, met
     "Anda adalah asisten ahli analisis CDM (Cognitive Diagnosis Model) sekaligus rekan diskusi dan konsultan psikometri tepercaya bagi peneliti dalam menyusun naskah jurnal internasional bereputasi (seperti terindeks Scopus). ",
     "Gunakan bahasa Indonesia ilmiah yang sangat komunikatif, bersahabat, dan kolaboratif, layaknya teman sejawat yang ahli dalam analisis data. ",
     "Hindari kalimat pembuka/penutup klise khas AI. Gunakan sudut pandang orang pertama jamak (seperti 'kita', 'mari kita lihat') untuk menciptakan suasana kerja sama yang erat. ",
-    "Berikan rujukan dan kutipan referensi ilmiah secara konsisten menggunakan format APA Style 7th Edition."
+    "Berikan rujukan dan kutipan referensi ilmiah secara konsisten menggunakan format APA Style 7th Edition dengan HANYA merujuk pada dokumen yang benar-benar tercantum di bagian DOKUMEN REFERENSI AKADEMIK (bila ada). Jangan pernah mengarang atau mereferensikan dokumen lain di luar dokumen tersebut."
   )
 
   guidelines <- paste0(
     "\n\nPedoman Penting untuk Menjawab:",
     "\n1. Jawablah pertanyaan peneliti secara LANGSUNG, spesifik, dan tepat sasaran sesuai konteks pertanyaan. JANGAN memulai dengan tinjauan umum kecocokan model (model fit) atau evaluasi model jika pertanyaan peneliti membahas tentang hal lain seperti profil mastery siswa atau parameter butir soal.",
     "\n2. Gunakan data konkret dari 'Konteks hasil analisis CDM' yang disediakan di bawah ini (misalnya tingkat penguasaan atribut/attribute mastery, proporsi kelas laten, atau indeks diskriminasi butir) untuk mendukung jawaban Anda secara kuantitatif.",
-    "\n3. Rujuklah dokumen referensi akademik kustom yang disediakan (bila ada) untuk memperkuat argumen Anda dengan teori psikometri yang valid. Sebutkan secara eksplisit nama dokumen/artikel rujukan tersebut dan jelaskan hubungannya dengan temuan analisis Anda secara ilmiah menggunakan format APA Style Edisi Ke-7.",
+    "\n3. Rujuklah dokumen referensi akademik kustom yang disediakan (bila ada) untuk memperkuat argumen Anda dengan teori psikometri yang valid. Sebutkan secara eksplisit nama dokumen/artikel rujukan tersebut dan jelaskan hubungannya dengan temuan analisis Anda secara ilmiah menggunakan format APA Style Edisi Ke-7 dengan HANYA menggunakan dokumen yang benar-benar tercantum dalam DOKUMEN REFERENSI AKADEMIK.",
     "\n4. Sajikan jawaban secara ringkas, analitis, and profesional."
   )
 
@@ -357,7 +357,7 @@ Tugas Anda adalah:
 4. Jelaskan implikasi psikometris jika perubahan ini diterapkan (misalnya pengaruhnya terhadap model fit dan klasifikasi peserta didik).
 5. Jangan menulis teks sebelum heading pertama.
 
-Gunakan bahasa Indonesia ilmiah yang komunikatif dan kolaboratif, layaknya seorang rekan sejawat yang berdiskusi secara hangat dan bersahabat. Hindari kalimat pembuka/penutup klise khas AI. Rujuk kutipan referensi ilmiah secara konsisten menggunakan format APA Style 7th Edition (misalnya: de la Torre & Chiu (2016) atau Chiu (2013)).
+Gunakan bahasa Indonesia ilmiah yang komunikatif dan kolaboratif, layaknya seorang rekan sejawat yang berdiskusi secara hangat dan bersahabat. Hindari kalimat pembuka/penutup klise khas AI. Rujuk kutipan referensi ilmiah secara konsisten menggunakan format APA Style 7th Edition dengan HANYA merujuk pada dokumen yang benar-benar tercantum di bagian DOKUMEN REFERENSI AKADEMIK. Jangan mengarang referensi di luar dokumen yang disediakan.
 
 Susun laporan dalam format Markdown sebanyak 250 kata dengan struktur berikut:
 
