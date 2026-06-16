@@ -741,6 +741,7 @@ function(req, res) {
   }, finally = {
     if (file.exists(temp_path)) unlink(temp_path)
   })
+}
 # ── GET /api/admin/reference/status ───────────────────────────────────────────
 #* @serializer json
 #* @get /api/admin/reference/status
