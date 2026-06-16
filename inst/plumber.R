@@ -570,6 +570,34 @@ function(req, res) {
   })
 }
 
+# ── POST /api/ai/qval-report ──────────────────────────────────────────────────
+#* @serializer json
+#* @post /api/ai/qval-report
+function(req, res) {
+  body             <- jsonlite::fromJSON(req$postBody, simplifyVector = TRUE)
+  api_key          <- body$apiKey
+  suggestions      <- body$suggestions
+  threshold        <- body$threshold
+  metadata         <- body$metadata
+  research_context <- body$researchContext
+
+  if (is.null(api_key) || api_key == "") {
+    res$status <- 400
+    return(list(status = "error", message = "API Key missing"))
+  }
+
+  ref_text <- get_combined_references_text("Q-Matrix")
+  prompt   <- buildQvalReportPrompt(suggestions, threshold, metadata, reference_text = ref_text, research_context = research_context)
+
+  tryCatch({
+    ai_text <- callGemini(api_key, prompt)
+    list(status = jsonlite::unbox("success"), report = jsonlite::unbox(ai_text))
+  }, error = function(e) {
+    res$status <- 500
+    list(status = jsonlite::unbox("error"), message = jsonlite::unbox(e$message))
+  })
+}
+
 # ── POST /api/ai/chat ─────────────────────────────────────────────────────────
 #* @serializer json
 #* @post /api/ai/chat

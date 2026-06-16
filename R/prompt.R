@@ -330,3 +330,43 @@ buildChatSystemPrompt <- function(cdm_context = NULL, reference_text = NULL, met
 
   paste0(base, guidelines, context_section, ref_prompt, meta_prompt, res_prompt)
 }
+
+#' Build Q-Matrix Validation Report Prompt
+#' @export
+buildQvalReportPrompt <- function(suggestions, threshold, metadata = NULL, reference_text = NULL, research_context = NULL) {
+  sug_json <- jsonlite::toJSON(suggestions, auto_unbox = TRUE, pretty = TRUE)
+  meta_prompt <- formatMetadataPrompt(metadata)
+  ref_prompt  <- formatReferencePrompt(reference_text)
+  res_prompt  <- formatResearchContextPrompt(research_context)
+
+  paste0(
+    "Anda adalah asisten ahli psikometri sekaligus rekan diskusi tepercaya bagi peneliti dalam menganalisis Cognitive Diagnosis Model (CDM).
+
+Berikut adalah hasil validasi empiris Q-Matrix menggunakan metode PVAF (Proportion of Variance Accounted For) dengan threshold ", threshold, ":
+
+", sug_json, "
+", meta_prompt, "
+", ref_prompt, "
+", res_prompt, "
+
+Tugas Anda adalah:
+
+1. Ringkas hasil validasi empiris Q-Matrix (berapa butir yang optimal, berapa butir yang disarankan untuk direvisi).
+2. Analisis secara mendalam butir-butir yang disarankan berubah. Jelaskan mengapa penambahan atau penghapusan atribut direkomendasikan berdasarkan nilai PVAF-nya.
+3. Berikan saran metodologis terkait bagaimana peneliti harus mendiskusikan temuan ini dengan ahli materi (content expert) sebelum menerapkan revisi.
+4. Jelaskan implikasi psikometris jika perubahan ini diterapkan (misalnya pengaruhnya terhadap model fit dan klasifikasi peserta didik).
+5. Jangan menulis teks sebelum heading pertama.
+
+Gunakan bahasa Indonesia ilmiah yang komunikatif dan kolaboratif, layaknya seorang rekan sejawat yang berdiskusi secara hangat dan bersahabat. Hindari kalimat pembuka/penutup klise khas AI. Rujuk kutipan referensi ilmiah secara konsisten menggunakan format APA Style 7th Edition (misalnya: de la Torre & Chiu (2016) atau Chiu (2013)).
+
+Susun laporan dalam format Markdown sebanyak 250 kata dengan struktur berikut:
+
+## A. Ringkasan Evaluasi Q-Matrix
+## B. Analisis Butir yang Disarankan Revisi
+## C. Rekomendasi Tindak Lanjut Akademik
+## D. Implikasi Psikometris
+
+Tulisan harus objektif, berbasis teori psikometri, dan sesuai dengan praktik analisis CDM dalam literatur akademik."
+  )
+}
+
