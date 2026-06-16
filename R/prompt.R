@@ -27,7 +27,7 @@ formatReferencePrompt <- function(reference_text) {
   }
   
   if (has_user) {
-    max_chars <- 10000
+    max_chars <- 100000
     user_trimmed <- if (nchar(reference_text) > max_chars) {
       paste0(substr(reference_text, 1, max_chars), "\n... [dipotong karena terlalu panjang] ...")
     } else reference_text

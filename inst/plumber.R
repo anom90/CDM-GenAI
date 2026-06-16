@@ -103,8 +103,25 @@ fetch_supabase_references <- function(category = NULL) {
 
 # Helper untuk menggabungkan referensi pusat (Supabase) dan referensi lokal
 get_combined_references_text <- function(category = NULL) {
-  # 1. Fetch Supabase references
-  supabase_docs <- fetch_supabase_references(category)
+  # 1. Fetch ALL Supabase references to provide comprehensive academic context
+  supabase_docs <- fetch_supabase_references(NULL)
+  
+  # Sort supabase_docs to prioritize the requested category first, then "Umum", then the rest
+  if (!is.null(supabase_docs) && length(supabase_docs) > 0 && !is.null(category) && category != "") {
+    target_cat <- tolower(trimws(category))
+    is_matching <- sapply(supabase_docs, function(doc) {
+      !is.null(doc$category) && tolower(trimws(doc$category)) == target_cat
+    })
+    is_umum <- sapply(supabase_docs, function(doc) {
+      !is.null(doc$category) && tolower(trimws(doc$category)) == "umum"
+    })
+    
+    # Sort order: matching first, then "Umum", then the rest
+    order_idx <- c(which(is_matching), which(is_umum & !is_matching), which(!is_matching & !is_umum))
+    order_idx <- unique(order_idx)
+    supabase_docs <- supabase_docs[order_idx]
+  }
+  
   supabase_text <- ""
   if (!is.null(supabase_docs) && length(supabase_docs) > 0) {
     formatted_supabase <- sapply(supabase_docs, function(doc) {
@@ -113,6 +130,12 @@ get_combined_references_text <- function(category = NULL) {
       title  <- if (!is.null(doc$title)) doc$title else "Tanpa Judul"
       cat_val<- if (!is.null(doc$category)) doc$category else "Umum"
       text   <- if (!is.null(doc$extracted_text)) doc$extracted_text else ""
+      
+      # Cap individual document text snippet to 12000 characters
+      max_doc_chars <- 12000
+      if (nchar(text) > max_doc_chars) {
+        text <- paste0(substr(text, 1, max_doc_chars), "\n... [teks dipotong untuk efisiensi konteks] ...")
+      }
       
       paste0("--- DOKUMEN PUSAT (Rujukan Utama): ", author, " (", year, "). ", title, ". [Kategori: ", cat_val, "] ---\n", text)
     })
