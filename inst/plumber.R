@@ -12,6 +12,7 @@ buildItemReportPrompt  <- cdm.gen.ai:::buildItemReportPrompt
 buildProfilPrompt      <- cdm.gen.ai:::buildProfilPrompt
 buildProfilIndividuPrompt <- cdm.gen.ai:::buildProfilIndividuPrompt
 buildChatSystemPrompt  <- cdm.gen.ai:::buildChatSystemPrompt
+buildQvalReportPrompt  <- cdm.gen.ai:::buildQvalReportPrompt
 
 # Load environment variables from .env if it exists
 load_dot_env <- function() {
