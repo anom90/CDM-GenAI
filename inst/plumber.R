@@ -308,7 +308,8 @@ function(req, res) {
         reliability      = r$reliability,
         parameters       = items,
         profil           = r$profil,
-        empirical_stable = r$empirical_stable
+        empirical_stable = r$empirical_stable,
+        item_fit         = r$item_fit
       )
     })
 
@@ -903,7 +904,8 @@ function(req, res) {
         reliability      = r$reliability,
         parameters       = items,
         profil           = r$profil,
-        empirical_stable = r$empirical_stable
+        empirical_stable = r$empirical_stable,
+        item_fit         = r$item_fit
       )
     })
 

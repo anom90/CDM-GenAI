@@ -127,6 +127,31 @@ fit_cdm <- function(data, q_matrix, model, mono.constraint = FALSE) {
          latent_class = list())
   })
 
+  item_fit_res <- tryCatch({
+    itf <- GDINA::itemfit(models)
+    mat <- itf$max.itemlevel.fit
+    item_names <- rownames(mat)
+    if (is.null(item_names)) {
+      item_names <- colnames(GDINA::extract(models, "dat"))
+    }
+    
+    lapply(seq_len(nrow(mat)), function(i) {
+      list(
+        item = item_names[i],
+        z_prop = as.numeric(mat[i, "z.prop"]),
+        pvalue_z_prop = as.numeric(mat[i, "pvalue[z.prop]"]),
+        max_z_r = as.numeric(mat[i, "max[z.r]"]),
+        pvalue_max_z_r = as.numeric(mat[i, "pvalue.max[z.r]"]),
+        adj_pvalue_max_z_r = as.numeric(mat[i, "adj.pvalue.max[z.r]"]),
+        max_z_logOR = as.numeric(mat[i, "max[z.logOR]"]),
+        pvalue_max_z_logOR = as.numeric(mat[i, "pvalue.max[z.logOR]"]),
+        adj_pvalue_max_z_logOR = as.numeric(mat[i, "adj.pvalue.max[z.logOR]"])
+      )
+    })
+  }, error = function(e) {
+    list()
+  })
+
   list(
     model_object = models,
     model_fit = list(
@@ -147,6 +172,7 @@ fit_cdm <- function(data, q_matrix, model, mono.constraint = FALSE) {
     ),
     prevalensi  = s$`Attribute Prevalence`$all,
     profil      = profil_data,
+    item_fit    = item_fit_res,
     empirical_stable = tryCatch({
       se_catprob <- GDINA::extract(models, what = "se.catprob.parm")
       if (!is.null(se_catprob)) {
