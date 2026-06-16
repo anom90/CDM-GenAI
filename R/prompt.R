@@ -113,10 +113,23 @@ formatMetadataPrompt <- function(metadata) {
   )
 }
 
-buildModelReportPrompt <- function(models, metadata = NULL, reference_text = NULL) {
+formatResearchContextPrompt <- function(research_context) {
+  if (is.null(research_context) || nchar(trimws(research_context)) == 0) return("")
+  
+  paste0(
+    "\n\n--- KONTEKS PENELITIAN & BIDANG KEILMUAN (RESEARCH CONTEXT) ---\n",
+    "Berikut adalah latar belakang/konteks penelitian kustom yang disediakan oleh peneliti:\n",
+    research_context, "\n",
+    "Anda wajib mengintegrasikan konteks/bidang keilmuan di atas ke dalam analisis hasil CDM Anda agar saran pedagogis, interpretasi, dan pembahasan yang dihasilkan relevan dan kontekstual.\n",
+    "--------------------------------------------------------------------\n"
+  )
+}
+
+buildModelReportPrompt <- function(models, metadata = NULL, reference_text = NULL, research_context = NULL) {
   models_json <- jsonlite::toJSON(models, auto_unbox = TRUE, pretty = TRUE)
   meta_prompt <- formatMetadataPrompt(metadata)
   ref_prompt  <- formatReferencePrompt(reference_text)
+  res_prompt  <- formatResearchContextPrompt(research_context)
 
   paste0(
     "Anda adalah asisten ahli psikometri sekaligus rekan diskusi tepercaya bagi peneliti dalam menganalisis Cognitive Diagnosis Model (CDM).
@@ -126,6 +139,7 @@ Berikut adalah hasil estimasi beberapa model CDM:
 ", models_json, "
 ", meta_prompt, "
 ", ref_prompt, "
+", res_prompt, "
 
 Tugas Anda adalah:
 
@@ -153,10 +167,11 @@ Tulisan harus objektif, berbasis teori psikometri, dan sesuai dengan praktik ana
   )
 }
 
-buildItemReportPrompt <- function(model_name, parameters, metadata = NULL, reference_text = NULL) {
+buildItemReportPrompt <- function(model_name, parameters, metadata = NULL, reference_text = NULL, research_context = NULL) {
   params_json <- jsonlite::toJSON(parameters, auto_unbox = TRUE, pretty = TRUE)
   meta_prompt <- formatMetadataPrompt(metadata)
   ref_prompt  <- formatReferencePrompt(reference_text)
+  res_prompt  <- formatResearchContextPrompt(research_context)
 
   paste0(
     "Anda adalah asisten ahli psikometri sekaligus rekan diskusi tepercaya bagi peneliti dalam menganalisis Cognitive Diagnosis Model (CDM).
@@ -166,6 +181,7 @@ Berikut adalah parameter butir soal dari model ", model_name, ":
 ", params_json, "
 ", meta_prompt, "
 ", ref_prompt, "
+", res_prompt, "
 
 Tugas Anda adalah menginterpretasikan parameter butir soal tersebut secara akademik:
 
@@ -191,7 +207,7 @@ Format Markdown, sekitar 200 kata.
 }
 
 buildProfilPrompt <- function(model_name, mastery_prob, mastery_prop_eap, mastery_prop_map,
-                              mastery_prop_mle, latent_class, metadata = NULL, reference_text = NULL) {
+                              mastery_prop_mle, latent_class, metadata = NULL, reference_text = NULL, research_context = NULL) {
   profil_json <- jsonlite::toJSON(
     list(
       attribute_prevalence   = mastery_prob,
@@ -204,6 +220,7 @@ buildProfilPrompt <- function(model_name, mastery_prob, mastery_prop_eap, master
   )
   meta_prompt <- formatMetadataPrompt(metadata)
   ref_prompt  <- formatReferencePrompt(reference_text)
+  res_prompt  <- formatResearchContextPrompt(research_context)
 
   paste0(
     "Anda adalah asisten ahli psikometri sekaligus rekan diskusi tepercaya bagi peneliti dalam menganalisis Cognitive Diagnosis Model (CDM).
@@ -213,6 +230,7 @@ Berikut adalah profil penguasaan atribut peserta didik berdasarkan model ", mode
 ", profil_json, "
 ", meta_prompt, "
 ", ref_prompt, "
+", res_prompt, "
 
 Keterangan data:
 - attribute_prevalence: proporsi penguasaan atribut dari parameter struktural model (prevalensi teoritis)
@@ -242,10 +260,11 @@ Format Markdown, sekitar 250 kata.
   )
 }
 
-buildProfilIndividuPrompt <- function(model_name, selected_persons, metadata = NULL, reference_text = NULL) {
+buildProfilIndividuPrompt <- function(model_name, selected_persons, metadata = NULL, reference_text = NULL, research_context = NULL) {
   persons_json <- jsonlite::toJSON(selected_persons, auto_unbox = TRUE, pretty = TRUE)
   meta_prompt  <- formatMetadataPrompt(metadata)
   ref_prompt   <- formatReferencePrompt(reference_text)
+  res_prompt   <- formatResearchContextPrompt(research_context)
 
   paste0(
     "Anda adalah asisten ahli psikometri sekaligus rekan diskusi tepercaya bagi peneliti dalam menganalisis Cognitive Diagnosis Model (CDM).
@@ -255,6 +274,7 @@ Berikut adalah profil individu peserta didik yang dipilih berdasarkan model ", m
 ", persons_json, "
 ", meta_prompt, "
 ", ref_prompt, "
+", res_prompt, "
 
 Keterangan data:
 - id: nomor urut responden
@@ -264,7 +284,7 @@ Keterangan data:
 
 Tugas Anda:
 
-1. Deskripsikan profil kognitif masing-masing peserta didik secara individual berdasarkan mp dan pattern.
+1. Deskripsikan profil kognitif masing-masing peserta didik secara individual berdasarkan mp and pattern.
 2. Jika lebih dari satu peserta dipilih, bandingkan kesamaan dan perbedaan profil antar individu.
 3. Identifikasi atribut yang sudah dikuasai (mp tinggi) dan yang masih perlu ditingkatkan (mp rendah).
 4. Berikan rekomendasi intervensi pembelajaran yang spesifik dan personal untuk masing-masing peserta.
@@ -283,7 +303,7 @@ Format Markdown, sekitar 200 kata.
   )
 }
 
-buildChatSystemPrompt <- function(cdm_context = NULL, reference_text = NULL, metadata = NULL) {
+buildChatSystemPrompt <- function(cdm_context = NULL, reference_text = NULL, metadata = NULL, research_context = NULL) {
   base <- paste0(
     "Anda adalah asisten ahli analisis CDM (Cognitive Diagnosis Model) sekaligus rekan diskusi dan konsultan psikometri tepercaya bagi peneliti dalam menyusun naskah jurnal internasional bereputasi (seperti terindeks Scopus). ",
     "Gunakan bahasa Indonesia ilmiah yang sangat komunikatif, bersahabat, dan kolaboratif, layaknya teman sejawat yang ahli dalam analisis data. ",
@@ -296,7 +316,7 @@ buildChatSystemPrompt <- function(cdm_context = NULL, reference_text = NULL, met
     "\n1. Jawablah pertanyaan peneliti secara LANGSUNG, spesifik, dan tepat sasaran sesuai konteks pertanyaan. JANGAN memulai dengan tinjauan umum kecocokan model (model fit) atau evaluasi model jika pertanyaan peneliti membahas tentang hal lain seperti profil mastery siswa atau parameter butir soal.",
     "\n2. Gunakan data konkret dari 'Konteks hasil analisis CDM' yang disediakan di bawah ini (misalnya tingkat penguasaan atribut/attribute mastery, proporsi kelas laten, atau indeks diskriminasi butir) untuk mendukung jawaban Anda secara kuantitatif.",
     "\n3. Rujuklah dokumen referensi akademik kustom yang disediakan (bila ada) untuk memperkuat argumen Anda dengan teori psikometri yang valid. Sebutkan secara eksplisit nama dokumen/artikel rujukan tersebut dan jelaskan hubungannya dengan temuan analisis Anda secara ilmiah menggunakan format APA Style Edisi Ke-7.",
-    "\n4. Sajikan jawaban secara ringkas, analitis, dan profesional."
+    "\n4. Sajikan jawaban secara ringkas, analitis, and profesional."
   )
 
   context_section <- if (!is.null(cdm_context) && length(cdm_context) > 0) {
@@ -306,6 +326,7 @@ buildChatSystemPrompt <- function(cdm_context = NULL, reference_text = NULL, met
 
   ref_prompt <- formatReferencePrompt(reference_text)
   meta_prompt <- formatMetadataPrompt(metadata)
+  res_prompt  <- formatResearchContextPrompt(research_context)
 
-  paste0(base, guidelines, context_section, ref_prompt, meta_prompt)
+  paste0(base, guidelines, context_section, ref_prompt, meta_prompt, res_prompt)
 }

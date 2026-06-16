@@ -22,3 +22,5 @@
 *.tmp
 fit_cdmx.R
 run_paket.R
+.env
+.env.local

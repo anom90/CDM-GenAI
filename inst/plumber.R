@@ -13,6 +13,30 @@ buildProfilPrompt      <- cdm.gen.ai:::buildProfilPrompt
 buildProfilIndividuPrompt <- cdm.gen.ai:::buildProfilIndividuPrompt
 buildChatSystemPrompt  <- cdm.gen.ai:::buildChatSystemPrompt
 
+# Load environment variables from .env if it exists
+load_dot_env <- function() {
+  paths_to_try <- c(".env", "../.env", "inst/.env", "../../.env")
+  for (p in paths_to_try) {
+    if (file.exists(p)) {
+      lines <- readLines(p, warn = FALSE)
+      lines <- lines[!grepl("^\\s*#", lines) & trimws(lines) != ""]
+      for (line in lines) {
+        eq_pos <- regexpr("=", line)
+        if (eq_pos > 0) {
+          key <- trimws(substr(line, 1, eq_pos - 1))
+          val <- trimws(substr(line, eq_pos + 1, nchar(line)))
+          val <- gsub("^['\"]|['\"]$", "", val)
+          vars <- list(val)
+          names(vars) <- key
+          do.call(Sys.setenv, vars)
+        }
+      }
+      break
+    }
+  }
+}
+load_dot_env()
+
 # ── Simpan referensi PDF per sesi ─────────────────────────────────────────────
 .reference_store <- new.env(parent = emptyenv())
 .reference_store$documents <- list()
@@ -28,6 +52,87 @@ get_all_references_text <- function() {
     paste0("--- DOKUMEN: ", name, " [Kategori: ", category, "] ---\n", docs[[name]])
   })
   paste(merged, collapse = "\n\n")
+}
+
+# Helper untuk mengambil data referensi dari Supabase
+fetch_supabase_references <- function(category = NULL) {
+  supabase_url <- Sys.getenv("SUPABASE_URL")
+  supabase_anon <- Sys.getenv("SUPABASE_ANON_KEY")
+  
+  if (supabase_url == "" || supabase_anon == "") {
+    message("Supabase URL atau Anon Key tidak ditemukan di environment.")
+    return(NULL)
+  }
+  
+  supabase_url <- gsub("/+$", "", supabase_url)
+  url <- paste0(supabase_url, "/rest/v1/cdm_references")
+  
+  query_params <- list()
+  if (!is.null(category) && category != "" && category != "Lainnya" && category != "Umum") {
+    query_params[["or"]] <- paste0("(category.eq.", category, ",category.eq.Umum)")
+  }
+  
+  headers <- c(
+    "apikey" = supabase_anon,
+    "Authorization" = paste("Bearer", supabase_anon),
+    "Accept" = "application/json"
+  )
+  
+  res <- tryCatch({
+    r <- httr::GET(url, httr::add_headers(.headers = headers), query = query_params)
+    if (httr::status_code(r) == 200) {
+      jsonlite::fromJSON(httr::content(r, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+    } else {
+      message("Gagal fetch Supabase (status code: ", httr::status_code(r), ")")
+      NULL
+    }
+  }, error = function(e) {
+    message("Gagal fetch Supabase: ", e$message)
+    NULL
+  })
+  
+  return(res)
+}
+
+# Helper untuk menggabungkan referensi pusat (Supabase) dan referensi lokal
+get_combined_references_text <- function(category = NULL) {
+  # 1. Fetch Supabase references
+  supabase_docs <- fetch_supabase_references(category)
+  supabase_text <- ""
+  if (!is.null(supabase_docs) && length(supabase_docs) > 0) {
+    formatted_supabase <- sapply(supabase_docs, function(doc) {
+      author <- if (!is.null(doc$author)) doc$author else "Anonim"
+      year   <- if (!is.null(doc$year)) doc$year else "n.d."
+      title  <- if (!is.null(doc$title)) doc$title else "Tanpa Judul"
+      cat_val<- if (!is.null(doc$category)) doc$category else "Umum"
+      text   <- if (!is.null(doc$extracted_text)) doc$extracted_text else ""
+      
+      paste0("--- DOKUMEN PUSAT (Rujukan Utama): ", author, " (", year, "). ", title, ". [Kategori: ", cat_val, "] ---\n", text)
+    })
+    supabase_text <- paste(formatted_supabase, collapse = "\n\n")
+  }
+  
+  # 2. Get local session references
+  local_text <- get_all_references_text()
+  
+  # 3. Combine them
+  combined_parts <- c()
+  if (supabase_text != "") combined_parts <- c(combined_parts, supabase_text)
+  if (!is.null(local_text) && local_text != "") combined_parts <- c(combined_parts, local_text)
+  
+  if (length(combined_parts) == 0) {
+    # Fallback to default reference text
+    default_ref_path <- system.file("reference/default_cdm_reference.txt", package = "cdm.gen.ai")
+    if (default_ref_path == "" || !file.exists(default_ref_path)) {
+      default_ref_path <- "inst/reference/default_cdm_reference.txt"
+    }
+    if (file.exists(default_ref_path)) {
+      return(paste(readLines(default_ref_path, warn = FALSE), collapse = "\n"))
+    }
+    return("")
+  }
+  
+  paste(combined_parts, collapse = "\n\n")
 }
 
 # ── Simpan file upload sementara antar request preview → analyze ──────────────
@@ -343,18 +448,19 @@ function(req, res) {
 #* @serializer json
 #* @post /api/ai/model-report
 function(req, res) {
-  body     <- jsonlite::fromJSON(req$postBody, simplifyVector = TRUE)
-  api_key  <- body$apiKey
-  models   <- body$models
-  metadata <- body$metadata
+  body             <- jsonlite::fromJSON(req$postBody, simplifyVector = TRUE)
+  api_key          <- body$apiKey
+  models           <- body$models
+  metadata         <- body$metadata
+  research_context <- body$researchContext
 
   if (is.null(api_key) || api_key == "") {
     res$status <- 400
     return(list(status = "error", message = "API Key missing"))
   }
 
-  ref_text <- get_all_references_text()
-  prompt   <- buildModelReportPrompt(models, metadata, reference_text = ref_text)
+  ref_text <- get_combined_references_text("Model Fit")
+  prompt   <- buildModelReportPrompt(models, metadata, reference_text = ref_text, research_context = research_context)
 
   tryCatch({
     ai_text <- callGemini(api_key, prompt)
@@ -369,19 +475,20 @@ function(req, res) {
 #* @serializer json
 #* @post /api/ai/item-report
 function(req, res) {
-  body       <- jsonlite::fromJSON(req$postBody, simplifyVector = TRUE)
-  api_key    <- body$apiKey
-  model_name <- body$modelName
-  parameters <- body$parameters
-  metadata   <- body$metadata
+  body             <- jsonlite::fromJSON(req$postBody, simplifyVector = TRUE)
+  api_key          <- body$apiKey
+  model_name       <- body$modelName
+  parameters       <- body$parameters
+  metadata         <- body$metadata
+  research_context <- body$researchContext
 
   if (is.null(api_key) || api_key == "") {
     res$status <- 400
     return(list(status = "error", message = "API Key missing"))
   }
 
-  ref_text <- get_all_references_text()
-  prompt   <- buildItemReportPrompt(model_name, parameters, metadata, reference_text = ref_text)
+  ref_text <- get_combined_references_text("Parameter Butir")
+  prompt   <- buildItemReportPrompt(model_name, parameters, metadata, reference_text = ref_text, research_context = research_context)
 
   tryCatch({
     ai_text <- callGemini(api_key, prompt)
@@ -405,15 +512,16 @@ function(req, res) {
   mastery_prop_mle  <- body$masteryPropMle
   latent_class      <- body$latentClass
   metadata          <- body$metadata
+  research_context  <- body$researchContext
 
   if (is.null(api_key) || api_key == "") {
     res$status <- 400
     return(list(status = "error", message = "API Key missing"))
   }
 
-  ref_text <- get_all_references_text()
+  ref_text <- get_combined_references_text("Reliabilitas")
   prompt   <- buildProfilPrompt(model_name, mastery_prob, mastery_prop_eap,
-                                mastery_prop_map, mastery_prop_mle, latent_class, metadata, reference_text = ref_text)
+                                mastery_prop_map, mastery_prop_mle, latent_class, metadata, reference_text = ref_text, research_context = research_context)
 
   tryCatch({
     ai_text <- callGemini(api_key, prompt)
@@ -433,6 +541,7 @@ function(req, res) {
   model_name       <- body$modelName
   selected_persons <- body$selectedPersons
   metadata         <- body$metadata
+  research_context <- body$researchContext
 
   if (is.null(api_key) || api_key == "") {
     res$status <- 400
@@ -443,8 +552,8 @@ function(req, res) {
     return(list(status = "error", message = "Tidak ada responden yang dipilih"))
   }
 
-  ref_text <- get_all_references_text()
-  prompt   <- buildProfilIndividuPrompt(model_name, selected_persons, metadata, reference_text = ref_text)
+  ref_text <- get_combined_references_text("Umum")
+  prompt   <- buildProfilIndividuPrompt(model_name, selected_persons, metadata, reference_text = ref_text, research_context = research_context)
 
   tryCatch({
     ai_text <- callGemini(api_key, prompt)
@@ -459,12 +568,13 @@ function(req, res) {
 #* @serializer json
 #* @post /api/ai/chat
 function(req, res) {
-  body        <- jsonlite::fromJSON(req$postBody, simplifyVector = TRUE)
-  api_key     <- body$apiKey
-  message     <- body$message
-  history     <- body$history
-  cdm_context <- body$context
-  metadata    <- body$metadata
+  body             <- jsonlite::fromJSON(req$postBody, simplifyVector = TRUE)
+  api_key          <- body$apiKey
+  message          <- body$message
+  history          <- body$history
+  cdm_context      <- body$context
+  metadata         <- body$metadata
+  research_context <- body$researchContext
 
   if (is.null(api_key) || api_key == "") {
     res$status <- 400
@@ -476,8 +586,8 @@ function(req, res) {
     return(list(status = "error", message = "Pesan tidak boleh kosong"))
   }
 
-  ref_text      <- get_all_references_text()
-  system_prompt <- buildChatSystemPrompt(cdm_context, ref_text, metadata)
+  ref_text      <- get_combined_references_text("Umum")
+  system_prompt <- buildChatSystemPrompt(cdm_context, ref_text, metadata, research_context = research_context)
   full_message  <- paste0(system_prompt, "\n\nPertanyaan peneliti: ", message)
 
   tryCatch({
@@ -623,6 +733,221 @@ function(req, res) {
   }, finally = {
     if (file.exists(temp_path)) unlink(temp_path)
   })
+}
+
+# ── POST /api/admin/reference/upload ──────────────────────────────────────────
+#* @serializer json
+#* @post /api/admin/reference/upload
+function(req, res) {
+  # Verify Developer Secret Key
+  auth_header <- req$HTTP_DEVELOPER_SECRET_KEY
+  if (is.null(auth_header) || auth_header == "") {
+    auth_header <- req$HTTP_AUTHORIZATION
+    if (!is.null(auth_header) && grepl("^Bearer ", auth_header)) {
+      auth_header <- gsub("^Bearer ", "", auth_header)
+    }
+  }
+  dev_secret <- Sys.getenv("DEVELOPER_SECRET_KEY")
+  if (dev_secret == "" || is.null(auth_header) || auth_header != dev_secret) {
+    res$status <- 401
+    return(list(status = jsonlite::unbox("error"), message = jsonlite::unbox("Unauthorized: Developer secret key mismatch atau tidak valid")))
+  }
+
+  file <- req$body$file
+  
+  # Parse form parameters using a robust internal helper
+  parse_field <- function(field_raw, default_val = NULL) {
+    if (is.null(field_raw)) return(default_val)
+    val <- NULL
+    if (is.list(field_raw)) {
+      if ("parsed" %in% names(field_raw) && !is.null(field_raw$parsed) && length(field_raw$parsed) > 0 && field_raw$parsed != "") {
+        val <- field_raw$parsed
+      } else if ("value" %in% names(field_raw)) {
+        v <- field_raw$value
+        if (is.raw(v) && length(v) > 0) {
+          val <- rawToChar(v)
+        } else {
+          val <- v
+        }
+      }
+    } else {
+      val <- field_raw
+    }
+    if (is.list(val)) val <- unlist(val)
+    if (is.null(val) || length(val) == 0 || is.na(val[1]) || val[1] == "") return(default_val)
+    return(as.character(val[1]))
+  }
+
+  author   <- parse_field(req$body$author, "Anonim")
+  year_raw <- parse_field(req$body$year, "2000")
+  year     <- as.integer(year_raw)
+  if (is.na(year)) year <- 2000
+  title    <- parse_field(req$body$title, "Tanpa Judul")
+  journal  <- parse_field(req$body$journal, "")
+  volume   <- parse_field(req$body$volume, "")
+  issue    <- parse_field(req$body$issue, "")
+  pages    <- parse_field(req$body$pages, "")
+  doi      <- parse_field(req$body$doi, "")
+  category <- parse_field(req$body$category, "Umum")
+  filename <- parse_field(req$body$filename, "document.pdf")
+
+  # Parse file data
+  file_data <- NULL
+  if (!is.null(file)) {
+    if (is.list(file) && "value" %in% names(file)) {
+      file_data <- file$value
+      if (is.null(filename) || filename == "document.pdf") {
+        if ("filename" %in% names(file)) filename <- file$filename
+      }
+    } else if (is.list(file) && length(file) > 0 && is.raw(file[[1]])) {
+      file_data <- file[[1]]
+    } else if (is.raw(file)) {
+      file_data <- file
+    }
+  }
+
+  if (is.null(file_data) || length(file_data) == 0) {
+    return(error_response(res, "File PDF tidak diterima", 400))
+  }
+
+  if (!requireNamespace("pdftools", quietly = TRUE)) {
+    return(error_response(res, "Package pdftools belum terinstall. Jalankan: install.packages('pdftools')", 500))
+  }
+
+  temp_path <- tempfile(fileext = ".pdf")
+  writeBin(file_data, temp_path)
+
+  tryCatch({
+    pages     <- pdftools::pdf_text(temp_path)
+    full_text <- paste(pages, collapse = "\n\n")
+    full_text <- trimws(gsub("\\s+", " ", full_text))
+
+    # Send to Supabase using service_role key
+    supabase_url <- Sys.getenv("SUPABASE_URL")
+    supabase_service <- Sys.getenv("SUPABASE_SERVICE_ROLE_KEY")
+    
+    if (supabase_url == "" || supabase_service == "") {
+      stop("SUPABASE_URL atau SUPABASE_SERVICE_ROLE_KEY tidak terkonfigurasi di environment backend.")
+    }
+    
+    url <- paste0(gsub("/+$", "", supabase_url), "/rest/v1/cdm_references")
+    
+    headers <- c(
+      "apikey" = supabase_service,
+      "Authorization" = paste("Bearer", supabase_service),
+      "Content-Type" = "application/json",
+      "Prefer" = "return=representation"
+    )
+    
+    payload <- list(
+      author = jsonlite::unbox(author),
+      year = jsonlite::unbox(year),
+      title = jsonlite::unbox(title),
+      journal = jsonlite::unbox(journal),
+      volume = jsonlite::unbox(volume),
+      issue = jsonlite::unbox(issue),
+      pages = jsonlite::unbox(pages),
+      doi = jsonlite::unbox(doi),
+      category = jsonlite::unbox(category),
+      extracted_text = jsonlite::unbox(full_text)
+    )
+    
+    res_post <- httr::POST(url, httr::add_headers(.headers = headers), body = payload, encode = "json")
+    
+    if (httr::status_code(res_post) %in% c(200, 201)) {
+      inserted_data <- jsonlite::fromJSON(httr::content(res_post, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+      list(
+        status  = jsonlite::unbox("success"),
+        message = jsonlite::unbox(paste0("Referensi akademik pusat '", title, "' berhasil disimpan ke Supabase.")),
+        data    = inserted_data[[1]]
+      )
+    } else {
+      res$status <- httr::status_code(res_post)
+      error_response(res, paste0("Gagal menulis ke Supabase: status ", httr::status_code(res_post), " - ", httr::content(res_post, "text", encoding = "UTF-8")), httr::status_code(res_post))
+    }
+  }, error = function(e) {
+    error_response(res, paste("Gagal memproses dan menyimpan referensi:", e$message), 500)
+  }, finally = {
+    if (file.exists(temp_path)) unlink(temp_path)
+  })
+}
+
+# ── POST /api/admin/reference/delete ──────────────────────────────────────────
+#* @serializer json
+#* @post /api/admin/reference/delete
+function(req, res) {
+  # Verify Developer Secret Key
+  auth_header <- req$HTTP_DEVELOPER_SECRET_KEY
+  if (is.null(auth_header) || auth_header == "") {
+    auth_header <- req$HTTP_AUTHORIZATION
+    if (!is.null(auth_header) && grepl("^Bearer ", auth_header)) {
+      auth_header <- gsub("^Bearer ", "", auth_header)
+    }
+  }
+  dev_secret <- Sys.getenv("DEVELOPER_SECRET_KEY")
+  if (dev_secret == "" || is.null(auth_header) || auth_header != dev_secret) {
+    res$status <- 401
+    return(list(status = jsonlite::unbox("error"), message = jsonlite::unbox("Unauthorized: Developer secret key mismatch atau tidak valid")))
+  }
+  
+  body <- jsonlite::fromJSON(req$postBody, simplifyVector = FALSE)
+  id   <- body$id
+  
+  if (is.null(id) || id == "") {
+    res$status <- 400
+    return(list(status = jsonlite::unbox("error"), message = jsonlite::unbox("ID tidak boleh kosong")))
+  }
+  
+  supabase_url <- Sys.getenv("SUPABASE_URL")
+  supabase_service <- Sys.getenv("SUPABASE_SERVICE_ROLE_KEY")
+  
+  url <- paste0(gsub("/+$", "", supabase_url), "/rest/v1/cdm_references?id=eq.", id)
+  
+  headers <- c(
+    "apikey" = supabase_service,
+    "Authorization" = paste("Bearer", supabase_service)
+  )
+  
+  res_del <- tryCatch({
+    r <- httr::DELETE(url, httr::add_headers(.headers = headers))
+    if (httr::status_code(r) %in% c(200, 204)) {
+      list(status = jsonlite::unbox("success"), message = jsonlite::unbox(paste0("Referensi dengan ID ", id, " berhasil dihapus")))
+    } else {
+      res$status <- httr::status_code(r)
+      list(status = jsonlite::unbox("error"), message = jsonlite::unbox(paste0("Gagal menghapus dari Supabase: status ", httr::status_code(r))))
+    }
+  }, error = function(e) {
+    res$status <- 500
+    list(status = jsonlite::unbox("error"), message = jsonlite::unbox(e$message))
+  })
+  
+  return(res_del)
+}
+
+# ── GET /api/reference/list ───────────────────────────────────────────────────
+#* @serializer json
+#* @get /api/reference/list
+function(category = NULL, res) {
+  docs <- fetch_supabase_references(category)
+  if (is.null(docs)) {
+    return(list())
+  }
+  cleaned_docs <- lapply(docs, function(doc) {
+    list(
+      id = jsonlite::unbox(doc$id),
+      author = jsonlite::unbox(doc$author),
+      year = jsonlite::unbox(doc$year),
+      title = jsonlite::unbox(doc$title),
+      journal = jsonlite::unbox(doc$journal),
+      volume = jsonlite::unbox(doc$volume),
+      issue = jsonlite::unbox(doc$issue),
+      pages = jsonlite::unbox(doc$pages),
+      doi = jsonlite::unbox(doc$doi),
+      category = jsonlite::unbox(doc$category),
+      created_at = jsonlite::unbox(doc$created_at)
+    )
+  })
+  return(cleaned_docs)
 }
 
 # ── POST /api/reference/update_category ───────────────────────────────────────
