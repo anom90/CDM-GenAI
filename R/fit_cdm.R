@@ -132,9 +132,14 @@ fit_cdm <- function(data, q_matrix, model, mono.constraint = FALSE) {
     mat <- itf$max.itemlevel.fit
     item_names <- colnames(GDINA::extract(models, "dat"))
     
+    safe_item_name <- function(idx) {
+      nm <- if (idx >= 1 && idx <= length(item_names)) item_names[idx] else NA_character_
+      if (is.na(nm)) paste0("Item ", idx) else nm
+    }
+
     lapply(seq_len(nrow(mat)), function(i) {
       list(
-        item = item_names[i],
+        item = safe_item_name(i),
         z_prop = as.numeric(mat[i, "z.prop"]),
         pvalue_z_prop = as.numeric(mat[i, "pvalue[z.prop]"]),
         max_z_r = as.numeric(mat[i, "max[z.r]"]),
@@ -154,12 +159,17 @@ fit_cdm <- function(data, q_matrix, model, mono.constraint = FALSE) {
     r_mat <- itf$r
     item_names <- colnames(GDINA::extract(models, "dat"))
     
+    safe_item_name <- function(idx) {
+      nm <- if (!is.na(idx) && idx >= 1 && idx <= length(item_names)) item_names[idx] else NA_character_
+      if (is.na(nm)) paste0("Item ", idx) else nm
+    }
+
     lapply(seq_len(nrow(r_mat)), function(i) {
       idx1 <- as.integer(r_mat[i, "item.pair.1"])
       idx2 <- as.integer(r_mat[i, "item.pair.2"])
       list(
-        item1 = item_names[idx1],
-        item2 = item_names[idx2],
+        item1 = safe_item_name(idx1),
+        item2 = safe_item_name(idx2),
         observed_r = as.numeric(r_mat[i, "observed.r"]),
         expected_r = as.numeric(r_mat[i, "expected.r"]),
         zstat = as.numeric(r_mat[i, "zstat"]),
