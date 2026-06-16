@@ -741,6 +741,16 @@ function(req, res) {
   }, finally = {
     if (file.exists(temp_path)) unlink(temp_path)
   })
+# ── GET /api/admin/reference/status ───────────────────────────────────────────
+#* @serializer json
+#* @get /api/admin/reference/status
+function(req, res) {
+  dev_secret <- Sys.getenv("DEVELOPER_SECRET_KEY")
+  dev_mode_available <- !is.null(dev_secret) && dev_secret != ""
+  list(
+    status = jsonlite::unbox("success"),
+    devModeAvailable = jsonlite::unbox(dev_mode_available)
+  )
 }
 
 # ── POST /api/admin/reference/upload ──────────────────────────────────────────
@@ -826,8 +836,8 @@ function(req, res) {
   writeBin(file_data, temp_path)
 
   tryCatch({
-    pages     <- pdftools::pdf_text(temp_path)
-    full_text <- paste(pages, collapse = "\n\n")
+    pdf_pages <- pdftools::pdf_text(temp_path)
+    full_text <- paste(pdf_pages, collapse = "\n\n")
     full_text <- trimws(gsub("\\s+", " ", full_text))
 
     # Send to Supabase using service_role key
