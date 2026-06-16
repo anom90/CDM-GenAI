@@ -59,11 +59,9 @@ fetch_supabase_references <- function(category = NULL) {
   supabase_url <- Sys.getenv("SUPABASE_URL")
   supabase_anon <- Sys.getenv("SUPABASE_ANON_KEY")
   
-  # Fallback ke database referensi akademis pusat CDM-GenAI pengembang
-  if (supabase_url == "") {
+  # Fallback ke database referensi akademis pusat CDM-GenAI pengembang jika salah satu kosong
+  if (supabase_url == "" || supabase_anon == "") {
     supabase_url <- "https://bngjmlxsjwjgqvbjsfrx.supabase.co"
-  }
-  if (supabase_anon == "") {
     supabase_anon <- "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuZ2ptbHhzandqZ3F2YmpzZnJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1NjAzMTgsImV4cCI6MjA5NzEzNjMxOH0.QLZqHWMyr5UWyzQGZ46wRshXXV-ixcbdASkRP14vadw"
   }
   
