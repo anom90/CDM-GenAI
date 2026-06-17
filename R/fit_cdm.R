@@ -26,11 +26,70 @@ fit_cdm <- function(data, q_matrix, model, mono.constraint = FALSE) {
   if (!is.numeric(q_matrix)) stop("Q-matrix harus numerik (0/1)")
   if (ncol(data) != nrow(q_matrix)) stop("Jumlah item dan baris Q-matrix tidak cocok")
 
-  models <- GDINA::GDINA(dat = data, Q = q_matrix, model = model,
-                         mono.constraint = mono.constraint)
+  # Try estimation with safety checks
+  fit_res <- tryCatch({
+    # Attempt 1: original mono.constraint setting
+    models <- GDINA::GDINA(dat = data, Q = q_matrix, model = model,
+                           mono.constraint = mono.constraint, verbose = 0)
+    s  <- GDINA::modelfit(models)
+    ca <- GDINA::CA(models)
+    list(models = models, s = s, ca = ca, success = TRUE, error_msg = "")
+  }, error = function(e1) {
+    # Attempt 2: If attempt 1 failed and mono.constraint was FALSE, try with TRUE
+    if (!mono.constraint) {
+      tryCatch({
+        models <- GDINA::GDINA(dat = data, Q = q_matrix, model = model,
+                               mono.constraint = TRUE, verbose = 0)
+        s  <- GDINA::modelfit(models)
+        ca <- GDINA::CA(models)
+        list(models = models, s = s, ca = ca, success = TRUE, error_msg = "")
+      }, error = function(e2) {
+        list(models = NULL, s = NULL, ca = NULL, success = FALSE, error_msg = conditionMessage(e2))
+      })
+    } else {
+      list(models = NULL, s = NULL, ca = NULL, success = FALSE, error_msg = conditionMessage(e1))
+    }
+  })
 
-  s  <- GDINA::modelfit(models)
-  ca <- GDINA::CA(models)
+  if (!fit_res$success) {
+    # Fallback return structure when estimation fails
+    return(list(
+      model_object = NULL,
+      model_fit = list(
+        model    = model,
+        n_parm   = NA_real_,
+        deviance = NA_real_,
+        aic      = NA_real_,
+        bic      = NA_real_,
+        m2       = NA_real_,
+        m2_df    = NA_real_,
+        m2_pv    = NA_real_,
+        rmsea2   = NA_real_,
+        srmsr    = NA_real_,
+        error_msg = fit_res$error_msg
+      ),
+      reliability = list(
+        ca_test      = NA_real_,
+        ca_attribute = as.list(setNames(rep(NA_real_, length(q_col_names)), q_col_names))
+      ),
+      prevalensi  = NULL,
+      profil      = list(
+        mastery_prob = list(),
+        mastery_prop_eap = list(), mastery_prop_map = list(), mastery_prop_mle = list(),
+        mastery_eap_ind = list(), mastery_map_ind = list(), mastery_mle_ind = list(),
+        mastery_mp = list(), total_scores = list(), patterns_per_person = list(),
+        latent_class = list()
+      ),
+      item_fit    = list(),
+      bivariate_fit = list(),
+      empirical_stable = FALSE,
+      success = FALSE
+    ))
+  }
+
+  models <- fit_res$models
+  s      <- fit_res$s
+  ca     <- fit_res$ca
 
   # ── Profil: mastery probability & latent class ────────────────────────────
   profil_data <- tryCatch({

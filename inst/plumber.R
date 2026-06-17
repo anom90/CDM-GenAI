@@ -424,6 +424,19 @@ function(req, res) {
     models <- lapply(results, function(r) {
       mod_obj <- r$model_object
 
+      if (is.null(mod_obj)) {
+        return(list(
+          name             = r$model_fit$model,
+          fit              = r$model_fit,
+          reliability      = r$reliability,
+          parameters       = list(),
+          profil           = r$profil,
+          empirical_stable = FALSE,
+          item_fit         = list(),
+          bivariate_fit    = list()
+        ))
+      }
+
       catprob <- GDINA::extract(mod_obj, what = "catprob.parm")
       discrim  <- GDINA::extract(mod_obj, what = "discrim")
       item_names <- colnames(GDINA::extract(mod_obj, "dat"))
@@ -1390,6 +1403,19 @@ function(req, res) {
 
     models <- lapply(results, function(r) {
       mod_obj <- r$model_object
+
+      if (is.null(mod_obj)) {
+        return(list(
+          name             = r$model_fit$model,
+          fit              = r$model_fit,
+          reliability      = r$reliability,
+          parameters       = list(),
+          profil           = r$profil,
+          empirical_stable = FALSE,
+          item_fit         = list(),
+          bivariate_fit    = list()
+        ))
+      }
 
       catprob <- GDINA::extract(mod_obj, what = "catprob.parm")
       discrim  <- GDINA::extract(mod_obj, what = "discrim")
