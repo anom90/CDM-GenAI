@@ -410,6 +410,7 @@ function(req, res) {
     as.character(body$models)
   else
     c("GDINA", "DINA", "DINO", "LLM", "RRUM", "ACDM")
+  model_list <- unique(model_list)
 
   temp_path <- .upload_store$temp_path
 
@@ -426,7 +427,7 @@ function(req, res) {
 
       if (is.null(mod_obj)) {
         return(list(
-          name             = r$model_fit$model,
+          name             = jsonlite::unbox(r$model_fit$model),
           fit              = r$model_fit,
           reliability      = r$reliability,
           parameters       = list(),
@@ -453,7 +454,7 @@ function(req, res) {
       })
 
       list(
-        name             = r$model_fit$model,
+        name             = jsonlite::unbox(r$model_fit$model),
         fit              = r$model_fit,
         reliability      = r$reliability,
         parameters       = items,
@@ -482,7 +483,8 @@ function(req, res) {
         q_matrix     = lapply(1:nrow(q_num), function(i) as.list(as.numeric(q_num[i, ]))),
         q_columns    = q_cols,
         item_metadata = item_metadata,
-        attribute_metadata = attribute_metadata
+        attribute_metadata = attribute_metadata,
+        monoConstraint = jsonlite::unbox(mono_constraint)
       )
     )
   }, error = function(e) {
@@ -1376,6 +1378,15 @@ function(req, res) {
   data_raw <- body$data
   q_raw    <- body$qMatrix
 
+  # Read parameters from req$postBody
+  mono_constraint <- if (!is.null(body$monoConstraint)) isTRUE(body$monoConstraint) else FALSE
+  model_list <- if (!is.null(body$models) && length(body$models) > 0) {
+    as.character(unlist(body$models))
+  } else {
+    c("GDINA", "DINA", "DINO", "LLM", "RRUM", "ACDM")
+  }
+  model_list <- unique(model_list)
+
   tryCatch({
     to_num_matrix <- function(x) {
       if (is.matrix(x)) return(matrix(as.numeric(x), nrow = nrow(x), ncol = ncol(x)))
@@ -1395,10 +1406,8 @@ function(req, res) {
     colnames(data)     <- data_cols
     colnames(q_matrix) <- q_cols
 
-    model_list <- c("GDINA", "DINA", "DINO", "LLM", "RRUM", "ACDM")
-
     results <- lapply(model_list, function(m) {
-      fit_cdm(data, q_matrix, model = m)
+      fit_cdm(data, q_matrix, model = m, mono.constraint = mono_constraint)
     })
 
     models <- lapply(results, function(r) {
@@ -1406,7 +1415,7 @@ function(req, res) {
 
       if (is.null(mod_obj)) {
         return(list(
-          name             = r$model_fit$model,
+          name             = jsonlite::unbox(r$model_fit$model),
           fit              = r$model_fit,
           reliability      = r$reliability,
           parameters       = list(),
@@ -1433,7 +1442,7 @@ function(req, res) {
       })
 
       list(
-        name             = r$model_fit$model,
+        name             = jsonlite::unbox(r$model_fit$model),
         fit              = r$model_fit,
         reliability      = r$reliability,
         parameters       = items,
@@ -1456,11 +1465,12 @@ function(req, res) {
       data = list(
         models       = models,
         data         = lapply(1:nrow(data), function(i) as.list(as.numeric(data[i, ]))),
-        data_columns = as.list(data_cols),
+        data_columns = data_cols,
         q_matrix     = lapply(1:nrow(q_matrix), function(i) as.list(as.numeric(q_matrix[i, ]))),
-        q_columns    = as.list(q_cols),
+        q_columns    = q_cols,
         item_metadata = item_metadata,
-        attribute_metadata = attribute_metadata
+        attribute_metadata = attribute_metadata,
+        monoConstraint = jsonlite::unbox(mono_constraint)
       )
     )
   }, error = function(e) {

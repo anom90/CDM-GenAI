@@ -100,15 +100,50 @@ formatMetadataPrompt <- function(metadata) {
     }
   }
   
-  if (items_str == "" && attrs_str == "") return("")
-  
+  # Q-Matrix mapping: which attributes each item measures. This is the key
+  # anti-hallucination signal — it tells the model exactly which competencies a
+  # given butir taps, so interpretations are grounded in the actual Q-Matrix.
+  qmap_str <- ""
+  if (!is.null(metadata$qmatrix)) {
+    qm <- metadata$qmatrix
+    rows <- NULL
+    if (is.data.frame(qm) && nrow(qm) > 0) {
+      rows <- lapply(seq_len(nrow(qm)), function(i) {
+        list(item = qm$item[i], attrs = qm$attributes[[i]])
+      })
+    } else if (is.list(qm) && length(qm) > 0) {
+      rows <- lapply(qm, function(r) list(item = r$item, attrs = r$attributes))
+    }
+    if (!is.null(rows) && length(rows) > 0) {
+      lines <- sapply(rows, function(r) {
+        item_name <- if (!is.null(r$item)) as.character(r$item)[1] else "Butir"
+        attrs <- unlist(r$attrs)
+        attrs_txt <- if (length(attrs) == 0) {
+          "(tidak mengukur atribut apa pun — periksa baris Q-Matrix ini)"
+        } else {
+          paste(attrs, collapse = ", ")
+        }
+        paste0("- ", item_name, " mengukur atribut: ", attrs_txt)
+      })
+      qmap_str <- paste0(
+        "Pemetaan Q-Matrix (Butir Soal -> Atribut/Kompetensi yang Diukur):\n",
+        paste(lines, collapse = "\n")
+      )
+    }
+  }
+
+  if (items_str == "" && attrs_str == "" && qmap_str == "") return("")
+
   paste0(
     "\n\n--- KONTEKS / DESKRIPSI VARIABEL ---\n",
     "Peneliti telah mendefinisikan label baru dan deskripsi materi/kompetensi untuk variabel berikut. ",
     "Gunakan informasi di bawah ini untuk menggantikan kode asli (seperti V1, V2, A1, A2) dengan label kustom ",
-    "yang lebih kontekstual, nyata, dan bermakna dalam penjelasan Anda agar peneliti mendapatkan laporan yang intuitif:\n\n",
+    "yang lebih kontekstual, nyata, dan bermakna dalam penjelasan Anda agar peneliti mendapatkan laporan yang intuitif. ",
+    "Gunakan Pemetaan Q-Matrix untuk mengetahui secara pasti butir mana mengukur atribut/kompetensi apa saja, ",
+    "sehingga interpretasi Anda berbasis struktur Q-Matrix yang sebenarnya dan TIDAK mengarang keterkaitan butir-atribut:\n\n",
     ifelse(items_str != "", paste0(items_str, "\n\n"), ""),
-    ifelse(attrs_str != "", paste0(attrs_str, "\n"), ""),
+    ifelse(attrs_str != "", paste0(attrs_str, "\n\n"), ""),
+    ifelse(qmap_str != "", paste0(qmap_str, "\n"), ""),
     "-------------------------------------\n"
   )
 }
