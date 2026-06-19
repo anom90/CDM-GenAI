@@ -1,3 +1,7 @@
 ^renv$
 ^renv\.lock$
 ^CITATION\.cff$
+^LICENSE\.md$
+^CHANGELOG\.md$
+^README\.md$
+^man/figures$

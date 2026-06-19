@@ -4,7 +4,7 @@ Title: CDM Analysis Application
 Version: 0.1.21
 Authors@R: person("Kartianom", email = "kartianom@gmail.com", role = c("aut", "cre"))
 Description: Cognitive Diagnosis Model Analysis with NextJS frontend.
-License: MIT
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports:

@@ -4,10 +4,14 @@
 
 ### Analisis *Cognitive Diagnosis Model* berbasis R, dengan antarmuka web modern & berbantuan AI
 
-[![Version](https://img.shields.io/badge/version-0.1.21-00685f?style=for-the-badge)](https://github.com/anom90/CDM-GenAI)
+[![Release](https://img.shields.io/github/v/release/anom90/CDM-GenAI?style=for-the-badge&color=00685f&label=release)](https://github.com/anom90/CDM-GenAI/releases)
 [![R](https://img.shields.io/badge/R-%E2%89%A5%204.1-276DC3?style=for-the-badge&logo=r&logoColor=white)](https://cran.r-project.org/)
 [![License](https://img.shields.io/badge/license-MIT-00685f?style=for-the-badge)](#-lisensi)
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.20758637-1682D4?style=for-the-badge)](https://doi.org/10.5281/zenodo.20758637)
+
+[![Last commit](https://img.shields.io/github/last-commit/anom90/CDM-GenAI?style=flat-square&color=00685f)](https://github.com/anom90/CDM-GenAI/commits)
+[![Stars](https://img.shields.io/github/stars/anom90/CDM-GenAI?style=flat-square&color=00685f)](https://github.com/anom90/CDM-GenAI/stargazers)
+[![Made with R & Next.js](https://img.shields.io/badge/made%20with-R%20%26%20Next.js-00685f?style=flat-square)](#-teknologi)
 
 <br/>
 
@@ -15,6 +19,25 @@
 Semua dalam satu aplikasi yang berjalan lokal di komputer Anda.
 
 </div>
+
+---
+
+## 📑 Daftar Isi
+
+- [Tentang](#-tentang)
+- [Fitur Utama](#-fitur-utama)
+- [Teknologi](#%EF%B8%8F-teknologi)
+- [Tangkapan Layar](#-tangkapan-layar)
+- [Persyaratan](#-persyaratan)
+- [Langkah 1 — Pasang R & RStudio](#-langkah-1--pasang-r--rstudio)
+- [Langkah 2 — Pasang Aplikasi](#-langkah-2--pasang-aplikasi)
+- [Langkah 3 — Jalankan](#%EF%B8%8F-langkah-3--jalankan)
+- [Alur Penggunaan Singkat](#-alur-penggunaan-singkat)
+- [Mengaktifkan Fitur AI](#-mengaktifkan-fitur-ai-google-gemini)
+- [Pemecahan Masalah](#-pemecahan-masalah)
+- [Sitasi](#-sitasi)
+- [Referensi & Penghargaan](#-referensi--penghargaan)
+- [Lisensi](#-lisensi)
 
 ---
 
@@ -44,6 +67,35 @@ browser — tanpa server eksternal, data tetap berada di komputer Anda.
 ![Next.js](https://img.shields.io/badge/Next.js-000000?style=flat-square&logo=nextdotjs&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
 ![Gemini](https://img.shields.io/badge/Google_Gemini-8E75B2?style=flat-square&logo=googlegemini&logoColor=white)
+
+---
+
+## 🖼️ Tangkapan Layar
+
+Antarmuka CDM-GenAI dirancang bersih, modern, dan responsif — dari manajemen data
+& Q-Matrix, dialog pratinjau analisis, hingga visualisasi hasil estimasi model.
+
+<!--
+  GALERI SCREENSHOT — siap dipakai.
+  Taruh 3 berkas gambar berikut di folder man/figures/, lalu HAPUS baris
+  pembuka "<!--" dan penutup "-->" ini agar galeri tampil:
+    - man/figures/screenshot-data.png      (Halaman Data & Q-Matrix)
+    - man/figures/screenshot-preview.png   (Dialog Pratinjau & Konfigurasi)
+    - man/figures/screenshot-hasil.png     (Hasil analisis / Fit Model)
+
+<table>
+  <tr>
+    <td width="33%"><img src="man/figures/screenshot-data.png" alt="Halaman Data & Q-Matrix"/></td>
+    <td width="33%"><img src="man/figures/screenshot-preview.png" alt="Dialog Pratinjau & Konfigurasi"/></td>
+    <td width="33%"><img src="man/figures/screenshot-hasil.png" alt="Hasil analisis"/></td>
+  </tr>
+  <tr align="center">
+    <td><sub>Data & Q-Matrix</sub></td>
+    <td><sub>Pratinjau & Konfigurasi</sub></td>
+    <td><sub>Hasil Analisis</sub></td>
+  </tr>
+</table>
+-->
 
 ---
 
@@ -226,11 +278,34 @@ kanan) yang menghasilkan sitasi otomatis dari berkas [`CITATION.cff`](CITATION.c
 
 ---
 
+## 🙏 Referensi & Penghargaan
+
+CDM-GenAI berdiri di atas paket-paket riset psikometri sumber terbuka. Mohon
+sitasi juga paket inti yang relevan saat melaporkan hasil analisis Anda:
+
+- **GDINA** — Ma, W., & de la Torre, J. (2020). GDINA: An R package for
+  cognitive diagnosis modeling. *Journal of Statistical Software, 93*(14), 1–26.
+  https://doi.org/10.18637/jss.v093.i14
+- **cdmTools** — Nájera, P., Sorrel, M. A., & Abad, F. J. *cdmTools: Useful Tools
+  for Cognitive Diagnosis Modeling* [Paket R]. CRAN.
+  https://CRAN.R-project.org/package=cdmTools
+
+> 💡 Untuk format sitasi paket yang paling mutakhir, jalankan di R:
+> `citation("GDINA")` atau `citation("cdmTools")`.
+
+Terima kasih pula kepada ekosistem yang menjadi fondasi aplikasi ini:
+[plumber](https://www.rplumber.io/), [Next.js](https://nextjs.org/),
+[Tailwind CSS](https://tailwindcss.com/), dan [Google Gemini](https://ai.google.dev/).
+
+Riwayat perubahan lengkap tersedia di [CHANGELOG.md](CHANGELOG.md).
+
+---
+
 <div align="center">
 
 ## 📄 Lisensi
 
-**MIT** © [Kartianom](mailto:kartianom@gmail.com)
+**MIT** © 2026 [Kartianom](mailto:kartianom@gmail.com), Samsul Hadi, Heri Retnawati & Kana Hidayati
 
 <sub>Dibuat untuk analisis diagnostik kognitif yang lebih mudah dan cerdas.</sub>
 
