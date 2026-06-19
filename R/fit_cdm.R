@@ -32,7 +32,7 @@ fit_cdm <- function(data, q_matrix, model, mono.constraint = FALSE) {
     models <- GDINA::GDINA(dat = data, Q = q_matrix, model = model,
                            mono.constraint = mono.constraint, verbose = 0)
     s  <- GDINA::modelfit(models)
-    ca <- GDINA::CA(models)
+    ca <- suppressWarnings(GDINA::CA(models))
     list(models = models, s = s, ca = ca, success = TRUE, error_msg = "")
   }, error = function(e1) {
     # Attempt 2: If attempt 1 failed and mono.constraint was FALSE, try with TRUE
@@ -41,7 +41,7 @@ fit_cdm <- function(data, q_matrix, model, mono.constraint = FALSE) {
         models <- GDINA::GDINA(dat = data, Q = q_matrix, model = model,
                                mono.constraint = TRUE, verbose = 0)
         s  <- GDINA::modelfit(models)
-        ca <- GDINA::CA(models)
+        ca <- suppressWarnings(GDINA::CA(models))
         list(models = models, s = s, ca = ca, success = TRUE, error_msg = "")
       }, error = function(e2) {
         list(models = NULL, s = NULL, ca = NULL, success = FALSE, error_msg = conditionMessage(e2))
@@ -109,8 +109,10 @@ fit_cdm <- function(data, q_matrix, model, mono.constraint = FALSE) {
     # Per-person binary profiles (0/1)
     # MAP and MLE return data frames with a trailing 'multimodes' column
     # EAP returns a plain matrix with no extra column
-    map_mat <- strip_to_matrix(GDINA::personparm(models, what = "MAP"))
-    mle_mat <- strip_to_matrix(GDINA::personparm(models, what = "MLE"))
+    # MAP/MLE emit "multiple modes" warnings for ties; the returned
+    # 'multimodes' column already flags these, so silence console noise.
+    map_mat <- strip_to_matrix(suppressWarnings(GDINA::personparm(models, what = "MAP")))
+    mle_mat <- strip_to_matrix(suppressWarnings(GDINA::personparm(models, what = "MLE")))
     eap_raw <- GDINA::personparm(models, what = "EAP")
     eap_mat <- {
       m <- as.matrix(eap_raw[, seq_len(length(q_col_names)), drop = FALSE])
