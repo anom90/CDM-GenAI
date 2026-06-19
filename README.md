@@ -7,6 +7,7 @@
 [![Version](https://img.shields.io/badge/version-0.1.21-00685f?style=for-the-badge)](https://github.com/anom90/CDM-GenAI)
 [![R](https://img.shields.io/badge/R-%E2%89%A5%204.1-276DC3?style=for-the-badge&logo=r&logoColor=white)](https://cran.r-project.org/)
 [![License](https://img.shields.io/badge/license-MIT-00685f?style=for-the-badge)](#-lisensi)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.20758637-1682D4?style=for-the-badge)](https://doi.org/10.5281/zenodo.20758637)
 
 <br/>
 
@@ -205,24 +206,23 @@ kanan) yang menghasilkan sitasi otomatis dari berkas [`CITATION.cff`](CITATION.c
 
 **Format APA:**
 
-> Kartianom, Hadi, S., Retnawati, H., & Hidayati, K. (2026). *CDM-GenAI: Cognitive Diagnosis Model analysis with Generative AI* (Versi 0.1.21) [Perangkat lunak]. https://github.com/anom90/CDM-GenAI
+> Kartianom, Hadi, S., Retnawati, H., & Hidayati, K. (2026). *CDM-GenAI: Cognitive Diagnosis Model Analysis with Generative AI* (v0.1.21). Zenodo. https://doi.org/10.5281/zenodo.20758637
 
 **BibTeX:**
 
 ```bibtex
 @software{kartianom2026cdmgenai,
-  author  = {Kartianom and Hadi, Samsul and Retnawati, Heri and Hidayati, Kana},
-  title   = {{CDM-GenAI: Cognitive Diagnosis Model Analysis with Generative AI}},
-  year    = {2026},
-  version = {0.1.21},
-  url     = {https://github.com/anom90/CDM-GenAI},
-  note    = {Produk disertasi doktoral, Program Studi Doktor PEP,
-             Universitas Negeri Yogyakarta}
+  author    = {Kartianom and Hadi, Samsul and Retnawati, Heri and Hidayati, Kana},
+  title     = {{CDM-GenAI: Cognitive Diagnosis Model Analysis with Generative AI}},
+  year      = {2026},
+  version   = {0.1.21},
+  publisher = {Zenodo},
+  doi       = {10.5281/zenodo.20758637},
+  url       = {https://doi.org/10.5281/zenodo.20758637},
+  note      = {Produk disertasi doktoral, Program Studi Doktor PEP,
+               Universitas Negeri Yogyakarta}
 }
 ```
-
-> 🔖 Setelah DOI Zenodo terbit, ganti baris `url`/`note` dengan DOI tersebut
-> (mis. `doi = {10.5281/zenodo.XXXXXXX}`) agar sitasi bersifat permanen.
 
 ---
 

@@ -27,10 +27,8 @@ keywords:
   - generative AI
   - educational assessment
   - R
-# Setelah membuat Release & menghubungkan repositori ke Zenodo, isi DOI di bawah
-# (hapus tanda komentar) lalu commit ulang berkas ini:
-# doi: "10.5281/zenodo.XXXXXXX"
-# identifiers:
-#   - type: doi
-#     value: "10.5281/zenodo.XXXXXXX"
-#     description: "DOI versi terkini (concept DOI) di Zenodo"
+doi: "10.5281/zenodo.20758637"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.20758637"
+    description: "DOI rilis v0.1.21 di Zenodo"
