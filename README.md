@@ -147,6 +147,27 @@ Berkas `.xlsx` yang diunggah sebaiknya mengikuti struktur pada template:
 - *(Opsional)* **Metadata** — label & deskripsi kustom untuk butir dan atribut,
   yang akan dimuat otomatis saat hasil ditampilkan.
 
+## 🔑 Mengaktifkan Fitur AI (Google Gemini)
+
+Fitur berbantuan AI — **Asisten Analisis**, **Draft Laporan**, dan interpretasi
+otomatis — memerlukan **API Key Google Gemini**. Key bersifat pribadi, gratis
+untuk penggunaan dasar, dan disimpan lokal di peramban Anda (dikirim hanya saat
+memanggil layanan AI).
+
+1. **Dapatkan API Key** di **Google AI Studio**:
+   > 🔗 **[aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)**
+
+   Masuk dengan akun Google → **Create API key** → salin key yang dihasilkan.
+
+2. **Masukkan ke aplikasi** — buka menu **Setting AI**, tempel API Key pada kolom
+   yang tersedia, lalu **simpan**.
+
+3. Fitur AI kini aktif. 🎉 Anda dapat menggunakan **Asisten Analisis** dan
+   menghasilkan **Draft Laporan** otomatis.
+
+> ⚠️ **Jaga kerahasiaan API Key Anda** — jangan dibagikan atau di-commit ke
+> repositori publik. Model yang digunakan adalah `gemini-2.5-flash`.
+
 ## 🩹 Pemecahan Masalah
 
 <details>
@@ -158,6 +179,19 @@ Berkas `.xlsx` yang diunggah sebaiknya mengikuti struktur pada template:
 options(repos = c(CRAN = "https://cloud.r-project.org"))
 remotes::install_version("CVXR", version = "1.0-15", upgrade = "never")
 ```
+
+</details>
+
+<details>
+<summary><b>Fitur AI menampilkan error "API Key tidak valid" atau "kuota tercapai"</b></summary>
+
+<br/>
+
+- **API Key tidak valid** — pastikan key disalin lengkap dan benar di menu
+  **Setting AI**. Buat key baru di
+  [Google AI Studio](https://aistudio.google.com/app/apikey) bila perlu.
+- **Kuota tercapai / High Demand** — batas permintaan gratis sedang penuh.
+  Tunggu beberapa saat lalu coba lagi.
 
 </details>
 
