@@ -130,6 +130,23 @@ Aplikasi berjalan di **`http://localhost:8000`** dan otomatis terbuka di browser
 3. Telusuri hasil di **Fit Model**, **Validasi Q-Matrix**, **Parameter Butir**, **Profil Peserta**.
 4. Manfaatkan **Asisten Analisis** & **Draft Laporan** untuk interpretasi berbantuan AI.
 
+> 💡 **Baru pertama kali / belum punya data?**
+> - **Coba Dataset Contoh** — di halaman **Data**, klik **"Gunakan Dataset Contoh"**.
+>   Aplikasi langsung memuat dataset bawaan sehingga Anda bisa menjelajahi seluruh
+>   fitur tanpa perlu menyiapkan berkas sendiri.
+> - **Unduh Template Excel** — pada tombol unggah, tersedia tautan
+>   **"Unduh Template Excel (.xlsx)"**. Gunakan template ini sebagai acuan format
+>   penulisan data respons & Q-Matrix sebelum mengunggah data Anda sendiri.
+
+### 📑 Format Berkas Excel
+
+Berkas `.xlsx` yang diunggah sebaiknya mengikuti struktur pada template:
+
+- **Data respons** — baris = responden, kolom = butir soal (nilai biner `0`/`1`).
+- **Q-Matrix** — baris = butir soal, kolom = atribut/kompetensi (nilai biner `0`/`1`).
+- *(Opsional)* **Metadata** — label & deskripsi kustom untuk butir dan atribut,
+  yang akan dimuat otomatis saat hasil ditampilkan.
+
 ## 🩹 Pemecahan Masalah
 
 <details>
