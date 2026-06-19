@@ -1,0 +1,36 @@
+cff-version: 1.2.0
+title: "CDM-GenAI: Cognitive Diagnosis Model Analysis with Generative AI"
+message: "Jika Anda menggunakan perangkat lunak ini, mohon sitasi seperti di bawah ini."
+type: software
+authors:
+  - given-names: Kartianom
+    affiliation: "Institut Agama Islam Negeri (IAIN) Bone"
+    email: kartianom@gmail.com
+  - family-names: Hadi
+    given-names: Samsul
+    affiliation: "Universitas Negeri Yogyakarta"
+  - family-names: Retnawati
+    given-names: Heri
+    affiliation: "Universitas Negeri Yogyakarta"
+  - family-names: Hidayati
+    given-names: Kana
+    affiliation: "Universitas Negeri Yogyakarta"
+version: "0.1.21"
+date-released: "2026-06-19"
+url: "https://github.com/anom90/CDM-GenAI"
+repository-code: "https://github.com/anom90/CDM-GenAI"
+license: MIT
+keywords:
+  - cognitive diagnosis model
+  - psychometrics
+  - GDINA
+  - generative AI
+  - educational assessment
+  - R
+# Setelah membuat Release & menghubungkan repositori ke Zenodo, isi DOI di bawah
+# (hapus tanda komentar) lalu commit ulang berkas ini:
+# doi: "10.5281/zenodo.XXXXXXX"
+# identifiers:
+#   - type: doi
+#     value: "10.5281/zenodo.XXXXXXX"
+#     description: "DOI versi terkini (concept DOI) di Zenodo"

@@ -197,6 +197,35 @@ remotes::install_version("CVXR", version = "1.0-15", upgrade = "never")
 
 ---
 
+## 📚 Sitasi
+
+Jika Anda menggunakan **CDM-GenAI** dalam riset atau publikasi, mohon sitasi karya ini.
+Pada halaman repositori GitHub, tersedia tombol **"Cite this repository"** (di panel
+kanan) yang menghasilkan sitasi otomatis dari berkas [`CITATION.cff`](CITATION.cff).
+
+**Format APA:**
+
+> Kartianom, Hadi, S., Retnawati, H., & Hidayati, K. (2026). *CDM-GenAI: Cognitive Diagnosis Model analysis with Generative AI* (Versi 0.1.21) [Perangkat lunak]. https://github.com/anom90/CDM-GenAI
+
+**BibTeX:**
+
+```bibtex
+@software{kartianom2026cdmgenai,
+  author  = {Kartianom and Hadi, Samsul and Retnawati, Heri and Hidayati, Kana},
+  title   = {{CDM-GenAI: Cognitive Diagnosis Model Analysis with Generative AI}},
+  year    = {2026},
+  version = {0.1.21},
+  url     = {https://github.com/anom90/CDM-GenAI},
+  note    = {Produk disertasi doktoral, Program Studi Doktor PEP,
+             Universitas Negeri Yogyakarta}
+}
+```
+
+> 🔖 Setelah DOI Zenodo terbit, ganti baris `url`/`note` dengan DOI tersebut
+> (mis. `doi = {10.5281/zenodo.XXXXXXX}`) agar sitasi bersifat permanen.
+
+---
+
 <div align="center">
 
 ## 📄 Lisensi
